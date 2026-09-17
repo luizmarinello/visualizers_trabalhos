@@ -314,3 +314,10 @@ html, body {
 .placar { display: flex; gap: 10px; font-family: var(--mono); font-size: 15px; justify-content: center; margin-top: 8px; }
 .placar span { color: var(--texto-2); }
 .placar b { color: var(--texto); font-weight: 600; }
+/* As cores de estado precisam vencer a regra acima, que e mais especifica
+   (.placar span) do que .ok sozinho. Sem isto o verde do "achou" e do
+   "resolvido!" saia cinza, e a demo perdia justamente o sinal de sucesso. */
+.placar span.ok, .placar span.erro, .placar span.alerta { color: inherit; }
+.placar span.ok { color: var(--ok); }
+.placar span.erro { color: var(--erro); }
+.placar span.alerta { color: var(--alerta); }

@@ -191,7 +191,12 @@
 
     // As setas só valem quando este slide está na tela. O deck.js já devolve
     // as setas para cá por causa do data-arrows="demo" no <section>.
-    var ativo = false;
+    //
+    // O valor inicial NÃO pode ser false: o deck.js roda antes daqui e já
+    // disparou `slide:entrou`. Quem abrisse a apresentação direto no #3 — que é
+    // o que acontece quando se recarrega a página no meio de um ensaio — ficava
+    // com o teclado morto até sair do slide e voltar.
+    var ativo = slide.classList.contains("ativo");
     slide.addEventListener("slide:entrou", function () { ativo = true; pintar(); });
     slide.addEventListener("slide:saiu", function () { ativo = false; parar(); });
 
