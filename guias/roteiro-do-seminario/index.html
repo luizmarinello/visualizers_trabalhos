@@ -91,8 +91,8 @@
         projetor. Se as cores lavarem, aperte <kbd>t</kbd> para o tema claro.</li>
     <li><b>Ler as notas de cada slide antes</b> (tecla <kbd>n</kbd>). Elas
         aparecem para a sala inteira — não é para abrir durante.</li>
-    <li><b>Preencher nomes e matrículas</b> na capa do relatório, no README e
-        nos slides 1 e 2.</li>
+    <li><b>Combinar quem dispara o <code>--completo</code></b> no terminal 2 no
+        slide 12. Quem está falando não consegue digitar.</li>
     <li><b>Baixar um backup dos slides</b>: salve a página pelo navegador. Se a
         internet da sala cair, você ainda tem.</li>
   </ul>
@@ -102,36 +102,35 @@
 <section id="quem">
   <h2><span class="num">02</span>Quem fala o quê</h2>
 
-  <p>Total de <b>13m55s</b>, dentro da janela de 10 a 15 minutos. Todos falam,
-     que é exigência do roteiro.</p>
+  <p>Total de <b>13m55s</b>, dentro da janela de 10 a 15 minutos. São três
+     integrantes, cinco slides para cada um, e todos falam — que é exigência do
+     roteiro.</p>
 
   <div class="pessoas">
     <div class="pessoa">
-      <h4>[nome 1] — o problema</h4>
-      <p class="slides">slides 1 a 4 · 2m50s</p>
-      <p>Abertura, as regras do jogo e a modelagem do estado.</p>
+      <h4>Luiz Henrique — o problema e o código</h4>
+      <p class="slides">slides 1 a 5 · 4m15s</p>
+      <p>Abertura, as regras do jogo, a modelagem do estado e a função única de
+         busca.</p>
     </div>
     <div class="pessoa">
-      <h4>[nome 2] — o código</h4>
-      <p class="slides">slides 5 a 7 · 3m35s</p>
-      <p>A função única, a heurística e a corrida das três buscas.</p>
+      <h4>Raphael — a heurística e os resultados</h4>
+      <p class="slides">slides 6 a 10 · 4m50s</p>
+      <p>De onde saiu a heurística, a corrida das três buscas, as tabelas, a
+         instância 4 e a poda.</p>
     </div>
     <div class="pessoa">
-      <h4>[nome 3] — os experimentos</h4>
-      <p class="slides">slides 8 a 11 · 3m45s</p>
-      <p>As tabelas, a instância 4, a poda e o bug mais difícil.</p>
-    </div>
-    <div class="pessoa">
-      <h4>[nome 4] — a análise</h4>
-      <p class="slides">slides 12 a 15 · 3m45s</p>
-      <p>As surpresas, o uso real, a demonstração ao vivo e o fecho.</p>
+      <h4>Vinicius — a análise e a demonstração</h4>
+      <p class="slides">slides 11 a 15 · 4m50s</p>
+      <p>O bug mais difícil, as surpresas, o uso real, a demonstração ao vivo e
+         o fecho.</p>
     </div>
   </div>
 
   <div class="cuidado">
     <p><b>Combinem a passagem de bastão.</b> A troca desengonçada entre pessoas é
        o que mais estraga ritmo de seminário. Quem termina diz uma frase de
-       entrega — <i>"e aí o [nome 2] mostra como isso virou código"</i> — e sai
+       entrega — <i>"e aí o Raphael conta de onde saiu a heurística"</i> — e sai
        de perto da tela.</p>
   </div>
 </section>
@@ -140,13 +139,13 @@
 <section id="roteiro-codigo">
   <h2><span class="num">03</span>Roteiro 1 — o código</h2>
 
-  <p>Três slides do <b>[nome 2]</b> e a demonstração ao vivo do <b>[nome 4]</b>.
-     O texto em azul é o que falar; pode ser dito com outras palavras, mas a
-     ordem das ideias importa.</p>
+  <p>O slide 5 é do <b>Luiz</b>, os slides 6 e 7 do <b>Raphael</b>, e a
+     demonstração ao vivo do <b>Vinicius</b>. O texto em azul é o que falar;
+     pode ser dito com outras palavras, mas a ordem das ideias importa.</p>
 
   <div class="bloco">
     <header><span class="n">slide 5</span><h3>Uma função de busca. Três f.</h3>
-      <span class="quem">[nome 2]</span><span class="tempo">85s</span></header>
+      <span class="quem">Luiz</span><span class="tempo">85s</span></header>
     <div class="corpo">
       <div class="fala">
         <p>"Essa é a parte que o trabalho mais cobra. O enunciado diz, com todas
@@ -176,12 +175,14 @@
         <code>busca.py</code>, role até as três funções <code>f</code>, e diga:
         <i>"são essas três linhas, e não existe outra função de busca no
         projeto"</i>. <b>20 segundos, e volte para os slides.</b></div>
+      <div class="faz"><b>Passagem de bastão.</b> Frase de entrega para o
+        Raphael: <i>"e aí o Raphael conta de onde saiu esse h"</i>.</div>
     </div>
   </div>
 
   <div class="bloco">
     <header><span class="n">slide 6</span><h3>A heurística e de onde ela sai</h3>
-      <span class="quem">[nome 2]</span><span class="tempo">65s</span></header>
+      <span class="quem">Raphael</span><span class="tempo">65s</span></header>
     <div class="corpo">
       <div class="fala">
         <p>"A heurística é o palpite. Para cada caixa, a gente mede a distância
@@ -209,7 +210,7 @@
 
   <div class="bloco">
     <header><span class="n">slide 7</span><h3>A corrida</h3>
-      <span class="quem">[nome 2]</span><span class="tempo">65s</span></header>
+      <span class="quem">Raphael</span><span class="tempo">65s</span></header>
     <div class="corpo">
       <div class="faz"><b>Clique em "correr" e fique calado</b> enquanto a
         animação roda inteira. São uns 12 segundos. O silêncio aqui vale mais que
@@ -230,7 +231,7 @@
 
   <div class="bloco">
     <header><span class="n">slide 14</span><h3>Demonstração ao vivo</h3>
-      <span class="quem">[nome 4]</span><span class="tempo">100s</span></header>
+      <span class="quem">Vinicius</span><span class="tempo">100s</span></header>
     <div class="corpo">
       <div class="cuidado">
         <p><b>O truque que salva esta parte:</b> o <code>--completo</code> leva
@@ -240,8 +241,9 @@
            você só mostra o resultado.</p>
       </div>
 
-      <div class="faz"><b>No slide 12, enquanto o [nome 4] começa a falar das
-        surpresas</b>, alguém dispara no terminal 2:</div>
+      <div class="faz"><b>No slide 12, enquanto o Vinicius começa a falar das
+        surpresas</b>, o Luiz ou o Raphael dispara no terminal 2 — quem está
+        falando não consegue digitar:</div>
       <div class="terminal"><span class="cmd">python main.py --completo</span></div>
 
       <p><b>1. Abrir com credibilidade</b> — 10s, no terminal 1:</p>
@@ -311,7 +313,7 @@ A*      manhattan  26  26  74.120  130.955  1.208</span></div>
 
   <div class="bloco">
     <header><span class="n">slide 1</span><h3>Capa</h3>
-      <span class="quem">[nome 1]</span><span class="tempo">15s</span></header>
+      <span class="quem">Luiz</span><span class="tempo">15s</span></header>
     <div class="corpo">
       <div class="fala">
         <p>"Boa tarde. O nosso é o <b>Problema 8</b> do catálogo: empurrar caixas
@@ -327,12 +329,12 @@ A*      manhattan  26  26  74.120  130.955  1.208</span></div>
 
   <div class="bloco">
     <header><span class="n">slide 2</span><h3>Como dividimos</h3>
-      <span class="quem">[nome 1]</span><span class="tempo">15s</span></header>
+      <span class="quem">Luiz</span><span class="tempo">15s</span></header>
     <div class="corpo">
       <div class="fala">
-        <p>"Só para vocês saberem quem fala o quê: eu pego o problema e a
-           modelagem, o [nome 2] pega o código, o [nome 3] os experimentos e o
-           [nome 4] a análise."</p>
+        <p>"Só para vocês saberem quem fala o quê: eu pego o problema, a
+           modelagem e o código; o Raphael pega a heurística e os resultados; e o
+           Vinicius pega a análise e a demonstração."</p>
         <p>"Mas <b>a divisão é de fala, não de conhecimento</b> — qualquer um de
            nós responde sobre qualquer linha."</p>
       </div>
@@ -345,7 +347,7 @@ A*      manhattan  26  26  74.120  130.955  1.208</span></div>
 
   <div class="bloco">
     <header><span class="n">slide 3</span><h3>Duas regras. Só isso.</h3>
-      <span class="quem">[nome 1]</span><span class="tempo">55s</span></header>
+      <span class="quem">Luiz</span><span class="tempo">55s</span></header>
     <div class="corpo">
       <div class="fala">
         <p>"O jogo tem duas regras, e só duas."</p>
@@ -373,7 +375,7 @@ A*      manhattan  26  26  74.120  130.955  1.208</span></div>
 
   <div class="bloco">
     <header><span class="n">slide 4</span><h3>O estado</h3>
-      <span class="quem">[nome 1]</span><span class="tempo">85s</span></header>
+      <span class="quem">Luiz</span><span class="tempo">85s</span></header>
     <div class="corpo">
       <div class="faz">Este é o slide mais importante da apresentação inteira.
         <b>Fale mais devagar do que nos outros.</b></div>
@@ -397,14 +399,15 @@ A*      manhattan  26  26  74.120  130.955  1.208</span></div>
         <p>"Reparem no padrão: <b>o erro que trava é o menos perigoso.</b> O
            perigoso é o primeiro, que responde errado em silêncio."</p>
       </div>
-      <div class="faz">Frase de passagem: <i>"e aí o [nome 2] mostra como isso
-        virou código"</i>.</div>
+      <div class="faz">Não há troca de pessoa aqui: o Luiz emenda direto no
+        slide 5. Frase de ligação: <i>"e agora eu mostro como isso virou
+        código"</i>.</div>
     </div>
   </div>
 
   <div class="bloco">
     <header><span class="n">slide 8</span><h3>Os números</h3>
-      <span class="quem">[nome 3]</span><span class="tempo">50s</span></header>
+      <span class="quem">Raphael</span><span class="tempo">50s</span></header>
     <div class="corpo">
       <div class="cuidado"><p><b>Não leia a tabela.</b> Ninguém acompanha número
         lido em voz alta. Aponte três coisas e siga.</p></div>
@@ -426,7 +429,7 @@ A*      manhattan  26  26  74.120  130.955  1.208</span></div>
 
   <div class="bloco">
     <header><span class="n">slide 9</span><h3>Instância 4: a UCS desiste</h3>
-      <span class="quem">[nome 3]</span><span class="tempo">70s</span></header>
+      <span class="quem">Raphael</span><span class="tempo">70s</span></header>
     <div class="corpo">
       <div class="fala">
         <p>"E aqui está o resultado que a gente considera o principal do
@@ -456,10 +459,10 @@ A*      manhattan  26  26  74.120  130.955  1.208</span></div>
 
   <div class="bloco">
     <header><span class="n">slide 10</span><h3>Becos sem saída e a poda</h3>
-      <span class="quem">[nome 3]</span><span class="tempo">40s</span></header>
+      <span class="quem">Raphael</span><span class="tempo">40s</span></header>
     <div class="corpo">
       <div class="fala">
-        <p>"Lembram da caixa que o [nome 1] empurrou para o canto lá no começo? É
+        <p>"Lembram da caixa que o Luiz empurrou para o canto lá no começo? É
            disso que se trata."</p>
         <p>"Célula livre, que não é alvo, com parede em dois lados. Caixa que
            entra ali não sai mais. A gente calcula esses cantos uma vez, no
@@ -478,7 +481,7 @@ A*      manhattan  26  26  74.120  130.955  1.208</span></div>
 
   <div class="bloco">
     <header><span class="n">slide 11</span><h3>O bug mais difícil</h3>
-      <span class="quem">[nome 3]</span><span class="tempo">65s</span></header>
+      <span class="quem">Vinicius</span><span class="tempo">65s</span></header>
     <div class="corpo">
       <div class="fala">
         <p>"O bug que mais nos custou."</p>
@@ -507,7 +510,7 @@ A*      manhattan  26  26  74.120  130.955  1.208</span></div>
 
   <div class="bloco">
     <header><span class="n">slide 12</span><h3>Três coisas que não esperávamos</h3>
-      <span class="quem">[nome 4]</span><span class="tempo">75s</span></header>
+      <span class="quem">Vinicius</span><span class="tempo">75s</span></header>
     <div class="corpo">
       <div class="faz"><b>Alguém dispara o <code>--completo</code> no terminal 2
         agora</b>, para estar pronto no slide 14.</div>
@@ -535,7 +538,7 @@ A*      manhattan  26  26  74.120  130.955  1.208</span></div>
 
   <div class="bloco">
     <header><span class="n">slide 13</span><h3>Qual usar, fora da sala de aula</h3>
-      <span class="quem">[nome 4]</span><span class="tempo">35s</span></header>
+      <span class="quem">Vinicius</span><span class="tempo">35s</span></header>
     <div class="corpo">
       <div class="fala">
         <p>"Rapidamente, onde usar cada um na vida real."</p>
@@ -557,7 +560,7 @@ A*      manhattan  26  26  74.120  130.955  1.208</span></div>
 
   <div class="bloco">
     <header><span class="n">slide 15</span><h3>Fechamento</h3>
-      <span class="quem">[nome 4]</span><span class="tempo">15s</span></header>
+      <span class="quem">Vinicius</span><span class="tempo">15s</span></header>
     <div class="corpo">
       <div class="fala">
         <p>"Fechando. <b>Uma função, três f, resultados muito diferentes.</b> A

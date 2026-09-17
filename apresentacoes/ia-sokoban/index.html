@@ -16,44 +16,43 @@
   <p class="sub">UCS, Busca Gulosa e A* &mdash; três algoritmos que são,
      na verdade, <span class="destaque">uma única função</span>.</p>
   <p class="miudo" style="margin-top:32px">
-     Inteligência Artificial &middot; Prof. Marcos Augusto Campagnaro Mucelini &middot; FAG<br>
-     [nome 1] &middot; [nome 2] &middot; [nome 3] &middot; [nome 4]</p>
+     Inteligência Artificial &middot; Prof. Marcos Augusto Campagnaro Mucelini &middot; FAG &middot; Turma T02 N<br>
+     Luiz Henrique Marinello da Rosa &middot; Raphael Gomes Henke &middot; Vinicius Fagundes</p>
   <aside>
     <p>Abrir dizendo o problema em uma frase: <b>Problema 8 do catálogo, o Sokoban</b> —
        um agente empurra caixas até os alvos, dentro de um labirinto.</p>
     <p>E dizer logo a tese da apresentação, que é o que o trabalho pedia:
        <b>não escrevemos três buscas. Escrevemos uma só, e trocamos a função que
        ordena a fila.</b> Tudo o que vem depois é consequência disso.</p>
-    <p>Lembrete: preencher os nomes e as matrículas antes de apresentar.</p>
   </aside>
 </section>
 
 <!-- 2 ---------------------------------------------------------------------->
 <section class="slide">
   <h2>Como dividimos</h2>
-  <div class="colunas">
+  <div class="colunas tres">
     <div class="coluna">
-      <div class="caixa">
-        <h3>[nome 1] &mdash; o problema</h3>
-        <p>As regras do jogo, a modelagem do estado e por que ela é a decisão
-           mais importante do trabalho. <span class="miudo">Slides 3 e 4.</span></p>
-      </div>
-      <div class="caixa">
-        <h3>[nome 2] &mdash; o código</h3>
-        <p>A função única de busca, a heurística e as três buscas correndo lado
-           a lado. <span class="miudo">Slides 5 a 7.</span></p>
+      <div class="caixa" style="flex:1">
+        <h3>Luiz Henrique &mdash; o problema e o código</h3>
+        <p>As regras do jogo, a modelagem do estado &mdash; que é a decisão mais
+           importante do trabalho &mdash; e a função única de busca.</p>
+        <p class="miudo">Slides 1 a 5.</p>
       </div>
     </div>
     <div class="coluna">
-      <div class="caixa">
-        <h3>[nome 3] &mdash; os experimentos</h3>
-        <p>As tabelas, a instância onde a UCS desiste, a poda e o bug que mais
-           nos custou. <span class="miudo">Slides 8 a 11.</span></p>
+      <div class="caixa" style="flex:1">
+        <h3>Raphael &mdash; a heurística e os resultados</h3>
+        <p>De onde saiu a heurística, as três buscas correndo lado a lado, as
+           tabelas, a instância onde a UCS desiste e a poda.</p>
+        <p class="miudo">Slides 6 a 10.</p>
       </div>
-      <div class="caixa">
-        <h3>[nome 4] &mdash; a análise</h3>
-        <p>As três surpresas, quando usar cada algoritmo e a demonstração ao
-           vivo. <span class="miudo">Slides 12 a 15.</span></p>
+    </div>
+    <div class="coluna">
+      <div class="caixa" style="flex:1">
+        <h3>Vinicius &mdash; a análise e a demonstração</h3>
+        <p>O bug que mais nos custou, as três surpresas, quando usar cada
+           algoritmo e o programa rodando ao vivo.</p>
+        <p class="miudo">Slides 11 a 15.</p>
       </div>
     </div>
   </div>
@@ -69,7 +68,8 @@
        9&nbsp;·70s &nbsp; 10&nbsp;·40s &nbsp; 11&nbsp;·65s &nbsp; 12&nbsp;·75s &nbsp;
        13&nbsp;·35s &nbsp; 14&nbsp;·100s &nbsp; 15&nbsp;·15s<br>
        (o slide 14 tem 100s porque inclui rodar a interface ao vivo)</p>
-    <p>Os slides 1 e 2 são de <b>[nome 1]</b>, que já emenda no 3 e no 4.</p>
+    <p>Dá <b>Luiz 4m15s · Raphael 4m50s · Vinicius 4m50s</b>. Cinco slides para
+       cada um.</p>
     <p>Se estiver atrasando, corte nesta ordem: <b>10</b>, <b>13</b>, <b>2</b>.
        Nunca corte o 4, o 9, o 11 nem o 12.</p>
   </aside>
@@ -500,7 +500,7 @@ def f_estrela(p):
     </div>
   </div>
   <aside>
-    <p>Se alguém empurrou a caixa para o canto no slide 3, retomar aqui:
+    <p>O Luiz empurrou a caixa para o canto no slide 3. Retomar aqui:
        "foi exatamente isso que aconteceu".</p>
     <p><b>Não vender a poda.</b> O roteiro diz que resultado modesto bem
        explicado vale mais que resultado bonito sem análise. O número é 2,8% e
