@@ -329,6 +329,13 @@
 
   window.SokobanDemos = {
     lerMapa: lerMapa,
+    // mover e venceu sao as regras do jogo. Ficam expostas porque o guia de
+    // estudo tambem precisa delas, e a regra do empurrao e justamente uma das
+    // coisas que ele ensina - duplica-la seria pedir para as duas versoes
+    // discordarem um dia.
+    mover: mover,
+    venceu: venceu,
+    becos: becos,
     desenharTabuleiro: desenharTabuleiro,
     tabuleiroJogavel: tabuleiroJogavel,
     corridaDasBuscas: corridaDasBuscas,

@@ -17,7 +17,17 @@ apresentacoes/
     index.html                  os 15 slides do seminário de IA
     demos.js                    as demos interativas
     dados.js                    gerado pelo Python — não editar a mão
+guias/
+  busca-em-ia/
+    index.html                  guia de estudo: o que é cada conceito
+    guia.js                     as demonstrações interativas
+    guia.css                    layout de documento (o resto vem do tema)
 ```
+
+Os **guias** são páginas que rolam, não apresentações. Servem para estudar antes
+do seminário: explicam os conceitos com o tabuleiro na tela para mexer. O guia
+de busca reimplementa a busca em JavaScript para poder mostrar a fronteira por
+dentro, e confere sozinho se os números batem com os do Python.
 
 ## Criar uma apresentação nova
 

@@ -1,0 +1,764 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="escuro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entendendo busca em IA — guia do trabalho</title>
+<link rel="stylesheet" href="../../assets/style.css">
+<link rel="stylesheet" href="guia.css">
+</head>
+<body>
+
+<button class="tema" id="botao-tema">tema</button>
+
+<div class="guia">
+
+<header class="topo">
+  <a class="volta" href="../../">&larr; voltar</a>
+  <h1>Entendendo o trabalho de busca</h1>
+  <p>O que é estado, heurística, fronteira, nó expandido — e onde cada uma
+     dessas coisas aparece no código que vocês entregam.</p>
+</header>
+
+<nav class="indice">
+  <h2>O que tem aqui</h2>
+  <ol>
+    <li><a href="#o-que-e">O que é "busca" em IA</a></li>
+    <li><a href="#estado">Estado</a></li>
+    <li><a href="#espaco">O espaço de estados</a></li>
+    <li><a href="#dentro">Como a busca funciona por dentro</a></li>
+    <li><a href="#ghf">g, h e f</a></li>
+    <li><a href="#heuristica">A heurística</a></li>
+    <li><a href="#admissivel">Admissível e consistente</a></li>
+    <li><a href="#tres">As três buscas são a mesma busca</a></li>
+    <li><a href="#instancia">Instância</a></li>
+    <li><a href="#poda">Poda de becos sem saída</a></li>
+    <li><a href="#glossario">Glossário</a></li>
+    <li><a href="#perguntas">Se te perguntarem</a></li>
+  </ol>
+</nav>
+
+<!-- ===================================================================== -->
+<section id="o-que-e">
+  <h2><span class="num">01</span>O que é "busca" em IA</h2>
+
+  <p>Busca aqui não tem nada a ver com procurar no Google. Em Inteligência
+     Artificial, <b>busca</b> é achar uma <b>sequência de ações</b> que leva de
+     onde você está até onde você quer chegar.</p>
+
+  <p>Pense num GPS. Você está na rua A, quer chegar na rua B. Existem milhares
+     de caminhos. O GPS não "sabe" o caminho — ele <b>procura</b>, testando
+     possibilidades, até achar um que funcione (e de preferência o mais curto).
+     É exatamente isso que o trabalho de vocês faz, só que empurrando caixas em
+     vez de virando esquinas.</p>
+
+  <h3>Todo problema de busca tem cinco ingredientes</h3>
+
+  <p>É a receita. Quando alguém diz "modelei o problema", quer dizer que
+     definiu estes cinco:</p>
+
+  <table>
+    <tr><th>Ingrediente</th><th style="text-align:left">No Sokoban de vocês</th></tr>
+    <tr><td>Estado inicial</td><td style="text-align:left">o agente em <code>(4,1)</code>, a caixa em <code>(2,3)</code></td></tr>
+    <tr><td>Ações</td><td style="text-align:left">andar para CIMA, BAIXO, ESQUERDA ou DIREITA</td></tr>
+    <tr><td>Resultado</td><td style="text-align:left">o que acontece com o mundo quando você faz uma ação</td></tr>
+    <tr><td>Custo</td><td style="text-align:left">1 por movimento do agente</td></tr>
+    <tr><td>Teste de objetivo</td><td style="text-align:left">toda caixa está sobre um alvo?</td></tr>
+  </table>
+
+  <p class="no-codigo">No código: os cinco estão em <b>sokoban.py</b> —
+     <code>inicial</code>, <code>acoes()</code>, <code>resultado()</code>,
+     <code>custo()</code> e <code>objetivo()</code>. O <code>busca.py</code> não
+     sabe nada sobre caixas ou labirintos: ele só chama essas cinco coisas. É por
+     isso que a mesma busca serviria para o 8-Puzzle ou para a Torre de Hanói.</p>
+
+  <div class="nota">
+    <span class="rotulo">a ideia central</span>
+    <p>O algoritmo de busca é <b>burro de propósito</b>. Ele não entende de
+       Sokoban. Ele só sabe: "me dê um estado, eu peço as ações possíveis, gero
+       os estados seguintes, e repito até um deles ser o objetivo". Toda a
+       inteligência sobre o problema está na modelagem e na heurística.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<section id="estado">
+  <h2><span class="num">02</span>Estado</h2>
+
+  <p><b>Estado é a fotografia do mundo num instante.</b> Tudo o que muda e que
+     importa, e nada além disso.</p>
+
+  <p>No Sokoban, o que muda é: onde está o agente, e onde estão as caixas. Então
+     o estado é exatamente isso:</p>
+
+  <pre><code>estado = (posição_do_agente, tupla_ordenada_das_caixas)</code></pre>
+
+  <p>Mexa no tabuleiro abaixo com as <b>setas do teclado</b> (clique nele
+     primeiro) ou com os botões, e veja a tupla mudando embaixo.</p>
+
+  <div class="painel">
+    <h4>o estado, ao vivo</h4>
+    <div class="lado-a-lado">
+      <div><div id="tab-estado"></div></div>
+      <div>
+        <div class="estado-tupla" id="tupla-estado"></div>
+        <div class="botoes">
+          <button data-mover="CIMA">↑ cima</button>
+          <button data-mover="BAIXO">↓ baixo</button>
+          <button data-mover="ESQUERDA">← esquerda</button>
+          <button data-mover="DIREITA">→ direita</button>
+          <button data-mover="reiniciar">reiniciar</button>
+        </div>
+        <p class="miudo" id="aviso-estado" style="margin-top:12px"></p>
+      </div>
+    </div>
+  </div>
+
+  <h3>Por que não basta guardar a posição do agente</h3>
+
+  <p>Esse é <b>o erro que o professor avisa na ficha do problema</b>, e é o mais
+     perigoso do trabalho inteiro.</p>
+
+  <p>A busca guarda uma lista de estados que já visitou, para não andar em
+     círculo. Se o estado for só a posição do agente, então estas duas situações
+     viram "o mesmo estado":</p>
+
+  <ul>
+    <li>agente em (4,3), caixa ainda no começo;</li>
+    <li>agente em (4,3), caixa já quase no alvo.</li>
+  </ul>
+
+  <p>Como o programa acha que já esteve ali, ele <b>descarta</b> a segunda. E aí
+     joga fora justamente o caminho que resolvia o problema.</p>
+
+  <div class="nota erro">
+    <span class="rotulo">por que dói tanto</span>
+    <p>Esse erro <b>não dá mensagem de erro nenhuma</b>. O programa roda até o
+       fim, sem travar, e responde "sem solução" — para um labirinto que tem
+       solução. Você fica horas procurando bug no algoritmo, e o algoritmo está
+       certo: quem está errado é a fotografia.</p>
+  </div>
+
+  <h3>Por que tupla, e por que ordenada</h3>
+
+  <p><b>Tupla</b> porque o estado é usado como <i>chave de dicionário</i> — é
+     assim que o programa consulta "já visitei isso?" instantaneamente. Em
+     Python, lista não pode ser chave; tupla pode. Se usar lista, o Python
+     reclama na hora: <code>unhashable type: 'list'</code>. Esse erro é o bonzinho
+     dos três, porque aparece imediatamente.</p>
+
+  <p><b>Ordenada</b> porque duas caixas nas mesmas células são a mesma situação,
+     não importa em que ordem estejam escritas. Sem ordenar,
+     <code>((2,3),(4,5))</code> e <code>((4,5),(2,3))</code> viram chaves
+     diferentes e o programa reexplora a mesma coisa duas vezes. Esse erro
+     <b>não dá sintoma nenhum</b> — só deixa tudo mais lento.</p>
+
+  <p class="no-codigo">No código: <b>sokoban.py</b>, a linha
+     <code>self.inicial = (agente, tuple(sorted(caixas)))</code>, e o
+     <code>sorted()</code> de novo dentro de <code>resultado()</code> toda vez
+     que uma caixa é empurrada.</p>
+</section>
+
+<!-- ===================================================================== -->
+<section id="espaco">
+  <h2><span class="num">03</span>O espaço de estados</h2>
+
+  <p><b>Espaço de estados</b> é o conjunto de todas as situações possíveis do
+     problema, ligadas umas às outras pelas ações. É um mapa gigante que
+     ninguém desenha — a busca vai descobrindo pedaços dele conforme anda.</p>
+
+  <p>Dá para calcular o tamanho. Numa sala com <i>L</i> células livres e
+     <i>k</i> caixas, o número de configurações é
+     <i>L</i> × C(<i>L</i>, <i>k</i>) — as posições possíveis do agente vezes as
+     combinações de onde as caixas podem estar:</p>
+
+  <table>
+    <tr><th>Instância</th><th>Células livres</th><th>Caixas</th><th>Configurações</th></tr>
+    <tr><td>1</td><td class="num">18</td><td class="num">1</td><td class="num">324</td></tr>
+    <tr><td>2</td><td class="num">48</td><td class="num">2</td><td class="num">54.144</td></tr>
+    <tr><td>3</td><td class="num">63</td><td class="num">3</td><td class="num">2.501.793</td></tr>
+    <tr><td>4</td><td class="num">70</td><td class="num">4</td><td class="num">64.182.650</td></tr>
+  </table>
+
+  <p>Repare no salto: <b>uma caixa a mais multiplica o espaço por dezenas.</b>
+     Isso se chama <b>explosão combinatória</b>, e é o motivo de a UCS não
+     terminar a instância 4. Não é lentidão de computador — é que existem 64
+     milhões de situações possíveis e ela insiste em olhar quase todas.</p>
+
+  <div class="nota">
+    <span class="rotulo">a frase que resume</span>
+    <p>O trabalho inteiro é sobre uma pergunta: <b>como não olhar o espaço de
+       estados todo?</b> A resposta é a heurística.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<section id="dentro">
+  <h2><span class="num">04</span>Como a busca funciona por dentro</h2>
+
+  <p>A busca tem duas estruturas, e entender essas duas é entender o algoritmo.</p>
+
+  <h3>A fronteira</h3>
+  <p><b>Fronteira</b> é a fila de espera: os estados que a busca já descobriu mas
+     ainda não examinou. Ela começa com um item só — o estado inicial.</p>
+  <p>A cada passo a busca <b>tira um</b> da fronteira e <b>põe os vizinhos dele</b>.
+     A única diferença entre UCS, Gulosa e A\* é <b>qual</b> ela tira primeiro.</p>
+
+  <h3>Os alcançados</h3>
+  <p><b>Alcançados</b> é o caderninho de "já vi isso". Impede a busca de girar
+     em círculo para sempre. Sem ele, o agente anda para a direita, para a
+     esquerda, para a direita… infinitamente.</p>
+
+  <h3>Nó gerado × nó expandido</h3>
+  <p>Essa distinção o roteiro cobra por escrito, e contar errado invalida todas
+     as tabelas:</p>
+  <ul>
+    <li><b>Gerado</b> — o estado foi criado e colocado na fronteira. Foi
+        <i>descoberto</i>.</li>
+    <li><b>Expandido</b> — o estado foi <i>tirado</i> da fronteira e teve os
+        vizinhos gerados. Foi <i>examinado</i>.</li>
+  </ul>
+  <p>Todo nó expandido foi gerado antes. Mas muitos nós são gerados e nunca
+     chegam a ser expandidos — ficam na fronteira até a busca acabar.
+     <b>A métrica que vale é a de expandidos</b>, porque é ela que mede o
+     trabalho que a busca realmente fez.</p>
+
+  <div class="painel">
+    <h4>a busca, passo a passo</h4>
+    <p class="miudo">Cada clique em <b>um passo</b> tira um nó da fronteira. A
+       linha destacada é o que foi escolhido, e o porquê está na coluna que o
+       algoritmo usa para ordenar.</p>
+    <div class="botoes" id="alg-passo">
+      <button data-alg="ucs">UCS</button>
+      <button data-alg="gulosa">Gulosa</button>
+      <button data-alg="estrela" class="ligado">A*</button>
+    </div>
+    <div class="lado-a-lado" style="margin-top:16px">
+      <div>
+        <div id="tab-passo"></div>
+        <div class="contadores" id="cont-passo"></div>
+      </div>
+      <div>
+        <div class="fronteira" id="fronteira-passo"></div>
+      </div>
+    </div>
+    <div class="botoes">
+      <button data-passo="um">um passo</button>
+      <button data-passo="dez">dez passos</button>
+      <button data-passo="fim">até achar</button>
+      <button data-passo="reiniciar">reiniciar</button>
+    </div>
+    <p class="miudo" id="aviso-passo" style="margin-top:10px"></p>
+  </div>
+
+  <p class="no-codigo">No código: <b>busca.py</b>. A fronteira é a lista
+     <code>fronteira</code> gerenciada pelo <code>heapq</code>; os alcançados são
+     o dicionário <code>alcancados</code>; e os contadores são
+     <code>gerados</code> e <code>expandidos</code>.</p>
+
+  <div class="nota alerta">
+    <span class="rotulo">detalhe que vale nota</span>
+    <p>O teste de objetivo é feito <b>quando o nó sai da fronteira</b>, e não
+       quando ele é criado. Parece detalhe e não é: enquanto um nó está na fila,
+       ainda pode aparecer um caminho mais barato até ele. Testar cedo demais faz
+       a busca devolver uma solução que funciona mas <b>não é a mais barata</b> —
+       e pior, só em alguns casos, o que é dificílimo de perceber.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<section id="ghf">
+  <h2><span class="num">05</span>g, h e f</h2>
+
+  <p>São três letras, e elas são o trabalho inteiro.</p>
+
+  <table>
+    <tr><th>Letra</th><th style="text-align:left">O que é</th><th style="text-align:left">Como se sabe</th></tr>
+    <tr><td><b>g</b></td><td style="text-align:left">o que já foi gasto para chegar aqui</td><td style="text-align:left">exato — é só somar</td></tr>
+    <tr><td><b>h</b></td><td style="text-align:left">o palpite do que ainda falta</td><td style="text-align:left">estimativa, nunca exata</td></tr>
+    <tr><td><b>f</b></td><td style="text-align:left">a nota do nó na fila</td><td style="text-align:left">quem decide a ordem</td></tr>
+  </table>
+
+  <p>Uma analogia de viagem: você saiu de casa e já rodou <b>g</b> = 40 km. O GPS
+     estima que ainda faltam <b>h</b> = 15 km. Então a viagem inteira por esse
+     caminho deve dar <b>f</b> = 55 km.</p>
+
+  <p>Mexa no tabuleiro e veja os três números mudando de verdade:</p>
+
+  <div class="painel">
+    <h4>g, h e f neste momento</h4>
+    <div class="lado-a-lado">
+      <div><div id="tab-ghf"></div></div>
+      <div>
+        <div class="medidores">
+          <div class="medidor">
+            <div class="nome">g</div><div class="valor destaque" id="v-g">0</div>
+            <div class="exp">movimentos feitos</div>
+          </div>
+          <div class="medidor">
+            <div class="nome">h</div><div class="valor alerta" id="v-h">4</div>
+            <div class="exp">palpite do que falta</div>
+          </div>
+          <div class="medidor">
+            <div class="nome">g + h</div><div class="valor ok" id="v-f">4</div>
+            <div class="exp">estimativa do total</div>
+          </div>
+        </div>
+        <div class="botoes">
+          <button data-ghf="CIMA">↑</button>
+          <button data-ghf="BAIXO">↓</button>
+          <button data-ghf="ESQUERDA">←</button>
+          <button data-ghf="DIREITA">→</button>
+          <button data-ghf="solucao">rodar a solução ótima</button>
+          <button data-ghf="reiniciar">reiniciar</button>
+        </div>
+        <p class="miudo" id="aviso-ghf" style="margin-top:12px"></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="nota ok">
+    <span class="rotulo">o que observar</span>
+    <p>Rode a solução ótima e acompanhe o <b>h</b>. Ele começa em 4 e só desce
+       quando a <b>caixa</b> anda — ficar parado enquanto o agente caminha é o
+       comportamento correto, porque <code>h</code> só olha para as caixas. Já o
+       <b>g</b> sobe a cada movimento. No fim, g = 11 e h = 0.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<section id="heuristica">
+  <h2><span class="num">06</span>A heurística</h2>
+
+  <p><b>Heurística é um palpite educado.</b> Uma conta rápida que estima quanto
+     falta para o objetivo, sem resolver o problema.</p>
+
+  <p>A de vocês é: <b>para cada caixa, a distância até o alvo mais próximo,
+     contada em quadradinhos, andando só na horizontal e na vertical</b>. Soma
+     tudo. Esse jeito de medir distância tem nome: <b>distância de Manhattan</b>
+     — porque em Manhattan você não corta pelo meio do quarteirão, anda pelas
+     ruas.</p>
+
+  <p>Na instância 1: a caixa está em (2,3), o alvo em (4,5). São 2 de diferença
+     na linha e 2 na coluna, então <b>h = 4</b>.</p>
+
+  <div class="painel">
+    <h4>de onde sai o 4</h4>
+    <div class="lado-a-lado">
+      <div><div id="tab-manhattan"></div></div>
+      <div>
+        <p class="miudo">Em azul, o caminho que a heurística imagina: 2 para
+           baixo, 2 para a direita. Ela atravessa a parede sem pedir licença —
+           é justamente isso que a torna um <i>palpite</i>, e não uma conta
+           exata.</p>
+        <p class="miudo"><b>h = 4</b>, mas a solução de verdade custa
+           <b>11</b>.</p>
+      </div>
+    </div>
+  </div>
+
+  <h3>De onde uma heurística sai: relaxamento</h3>
+
+  <p>Essa é a pergunta mais provável do seminário: <i>"como vocês chegaram
+     nessa heurística?"</i>. A resposta tem uma palavra: <b>relaxamento</b>.</p>
+
+  <p>Relaxar é <b>apagar regras do problema</b> até sobrar uma versão tão fácil
+     que dá para resolver de cabeça. A resposta dessa versão fácil vira o
+     palpite. Vocês apagaram três regras:</p>
+
+  <ol>
+    <li><b>As paredes</b> — o labirinto vira uma sala vazia.</li>
+    <li><b>As outras caixas</b> — cada caixa anda como se fosse a única.</li>
+    <li><b>O deslocamento do agente</b> — ele se teletransporta para o lado
+        certo de cada caixa, de graça.</li>
+  </ol>
+
+  <p>No problema relaxado, mover uma caixa 4 células custa exatamente 4. Por isso
+     h = 4.</p>
+
+  <h3>Por que a diferença entre 4 e 11 não é um defeito</h3>
+
+  <p>Olhe a solução ótima. A caixa percorre 4 células — exatamente o que a
+     heurística previu. Os outros <b>7 movimentos</b> são o agente <b>caminhando
+     para se posicionar atrás da caixa</b> antes de cada empurrão.</p>
+
+  <p>E foi precisamente essa caminhada que a terceira regra apagou. A heurística
+     não errou por descuido: ela errou <b>exatamente na conta que escolhemos
+     jogar fora</b>. Isso é o que se espera de um relaxamento bem feito.</p>
+
+  <p class="no-codigo">No código: <b>sokoban.py</b>, função <code>h()</code>. A
+     docstring dela explica o relaxamento — é literalmente a resposta a essa
+     pergunta, já escrita.</p>
+</section>
+
+<!-- ===================================================================== -->
+<section id="admissivel">
+  <h2><span class="num">07</span>Admissível e consistente</h2>
+
+  <h3>Admissível</h3>
+  <p>Uma heurística é <b>admissível</b> quando <b>nunca chuta para mais</b>. Ela
+     pode subestimar à vontade, mas não pode dizer "faltam 20" quando na verdade
+     faltam 12.</p>
+
+  <p>Por que isso importa tanto? Porque é o que garante que o A\* ache a
+     <b>melhor</b> solução. Se a heurística exagerar, o A\* pode descartar o
+     caminho bom achando que ele é caro, e entregar um pior — sem avisar.</p>
+
+  <div class="nota">
+    <span class="rotulo">regra de bolso</span>
+    <p><b>Subestimar é seguro. Superestimar quebra tudo.</b> Uma heurística que
+       sempre responde zero é perfeitamente admissível — e perfeitamente inútil.
+       O jogo é chutar o mais alto possível sem nunca passar do valor real.</p>
+  </div>
+
+  <p>Veja a heurística acompanhando a solução ótima. A linha laranja (o palpite)
+     nunca encosta na linha verde (o custo que de fato falta):</p>
+
+  <div class="painel">
+    <h4>h nunca passa do custo real</h4>
+    <div id="grafico-admissivel"></div>
+    <p class="miudo" style="margin-top:10px">Cada coluna é um passo da solução
+       ótima da instância 1. Verde = quanto <b>realmente</b> falta dali até o
+       fim. Laranja = o que a heurística <b>chuta</b>. A laranja sempre cabe
+       dentro da verde. Se em algum passo ela ultrapassasse, a heurística seria
+       inadmissível.</p>
+  </div>
+
+  <p class="no-codigo">No código: <b>teste.py</b>, função
+     <code>teste_heuristica_admissivel()</code>, faz exatamente essa conferência
+     automaticamente.</p>
+
+  <h3>Consistente</h3>
+  <p><b>Consistente</b> é uma exigência um pouco mais forte: o palpite não pode
+     dar saltos estranhos de um passo para o outro. Se dar um passo custa 1, o
+     palpite pode cair no máximo 1.</p>
+  <p>No Sokoban isso se verifica em dois casos, e só:</p>
+  <ul>
+    <li><b>Movimento simples</b> — nenhuma caixa se mexe, então h não muda e o
+        custo foi 1. Nada a conferir.</li>
+    <li><b>Empurrão</b> — uma caixa anda uma célula, então h muda no máximo uma
+        unidade de distância, e o custo pago foi exatamente o de um empurrão.</li>
+  </ul>
+  <p>Toda heurística consistente é automaticamente admissível. O contrário não
+     vale.</p>
+</section>
+
+<!-- ===================================================================== -->
+<section id="tres">
+  <h2><span class="num">08</span>As três buscas são a mesma busca</h2>
+
+  <p>Essa é <b>a tese do trabalho</b> e a regra que vale 15% de desconto se for
+     violada. Não existem três algoritmos no código de vocês. Existe
+     <b>uma função</b>, e três maneiras de dar nota aos nós da fronteira:</p>
+
+  <table>
+    <tr><th>Busca</th><th style="text-align:left">f(n)</th><th style="text-align:left">O que ela olha</th><th style="text-align:left">Acha o melhor?</th></tr>
+    <tr><td>UCS</td><td style="text-align:left"><code>g</code></td><td style="text-align:left">só o que já gastou</td><td style="text-align:left" class="ok">sim</td></tr>
+    <tr><td>Gulosa</td><td style="text-align:left"><code>h</code></td><td style="text-align:left">só o palpite do que falta</td><td style="text-align:left" class="erro">não</td></tr>
+    <tr><td>A*</td><td style="text-align:left"><code>g + h</code></td><td style="text-align:left">os dois</td><td style="text-align:left" class="ok">sim</td></tr>
+  </table>
+
+  <pre><code>def f_ucs(p):      return lambda no: no.g
+def f_gulosa(p):   return lambda no: p.h(no.estado)
+def f_estrela(p):  return lambda no: no.g + p.h(no.estado)</code></pre>
+
+  <p>É isso. Três linhas. Todo o resto é a mesma função <code>busca()</code>.</p>
+
+  <h3>O que cada uma faz na prática</h3>
+
+  <p><b>UCS</b> não faz ideia de onde fica o alvo. Ela examina tudo que custa 1,
+     depois tudo que custa 2, e vai abrindo um círculo em todas as direções.
+     Acha o melhor caminho sempre — mas paga caríssimo por isso.</p>
+
+  <p><b>Gulosa</b> só olha para o palpite e corre na direção do alvo. É
+     rapidíssima. O problema: ela <b>nunca reconsidera</b>. Se entrou num
+     caminho ruim que parecia bom, segue nele até o fim.</p>
+
+  <p><b>A\*</b> equilibra: prefere nós que parecem perto do alvo <i>e</i> que não
+     custaram caro até aqui. Acha o melhor caminho como a UCS, examinando uma
+     fração dos nós.</p>
+
+  <div class="painel">
+    <h4>as três no mesmo labirinto</h4>
+    <p class="miudo">Um nó por ciclo para as três. A cor marca por onde a caixa
+       já passou. É a ordem real de expansão, gravada pelo Python.</p>
+    <div class="pistas">
+      <div class="pista"><div id="pista-ucs"></div><div class="rotulo" id="r-ucs"></div></div>
+      <div class="pista"><div id="pista-gulosa"></div><div class="rotulo" id="r-gulosa"></div></div>
+      <div class="pista"><div id="pista-estrela"></div><div class="rotulo" id="r-estrela"></div></div>
+    </div>
+    <div class="botoes" style="justify-content:center">
+      <button data-corrida="correr">correr</button>
+      <button data-corrida="pausar">pausar</button>
+      <button data-corrida="reiniciar">reiniciar</button>
+    </div>
+  </div>
+
+  <p>Os números reais do trabalho, na instância em que a diferença aparece
+     (instância 3, três caixas):</p>
+
+  <table>
+    <tr><th>Busca</th><th>Custo da solução</th><th>Nós expandidos</th></tr>
+    <tr><td>UCS</td><td class="num ok">28</td><td class="num">1.532.839</td></tr>
+    <tr><td>Gulosa</td><td class="num erro">40</td><td class="num">364</td></tr>
+    <tr><td>A*</td><td class="num ok">28</td><td class="num">159.631</td></tr>
+  </table>
+
+  <p>Leia a tabela assim: a Gulosa fez <b>4.000 vezes menos trabalho</b> que a
+     UCS — e entregou uma solução <b>43% pior</b>. O A\* entregou a solução
+     perfeita fazendo <b>10 vezes menos trabalho</b> que a UCS. É esse o
+     contraste que o trabalho existe para mostrar.</p>
+
+  <div class="nota ok">
+    <span class="rotulo">a prova de que é uma função só</span>
+    <p>Se você zerar a heurística (<code>h = 0</code>), as três viram
+       literalmente o mesmo algoritmo: o A\* vira UCS, e a Gulosa vira uma busca
+       que anda em largura. Vocês testaram isso: as três expandiram
+       <b>exatamente os mesmos 73 nós</b>. Três programas separados jamais dariam
+       o mesmo número.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<section id="instancia">
+  <h2><span class="num">09</span>Instância</h2>
+
+  <p><b>Instância é um caso concreto do problema.</b> "Sokoban" é o problema;
+     "este labirinto de 6×7 com uma caixa" é uma instância dele.</p>
+
+  <p>É o mesmo que dizer: <i>equação do segundo grau</i> é o problema,
+     <i>x² − 5x + 6 = 0</i> é uma instância.</p>
+
+  <p>Vocês montaram quatro, e cada uma existe para mostrar uma coisa
+     diferente. Isso não é enfeite: um trabalho com uma instância só não
+     conseguiria mostrar nada, porque num labirinto pequeno os três algoritmos
+     empatam.</p>
+
+  <table>
+    <tr><th>Instância</th><th style="text-align:left">Serve para</th></tr>
+    <tr><td>1 — 1 caixa</td><td style="text-align:left">gabarito. É o labirinto que o professor desenhou; dá para conferir a mão</td></tr>
+    <tr><td>2 — 2 caixas</td><td style="text-align:left">a diferença entre UCS e A\* já aparece, mas os três ainda acertam</td></tr>
+    <tr><td>3 — 3 caixas</td><td style="text-align:left">a Gulosa erra pela primeira vez</td></tr>
+    <tr><td>4 — 4 caixas</td><td style="text-align:left">a UCS não termina</td></tr>
+  </table>
+
+  <div class="nota alerta">
+    <span class="rotulo">por que a instância 3 faz a Gulosa errar</span>
+    <p>Porque os três alvos estão <b>amontoados num canto</b>. A heurística manda
+       cada caixa para o alvo mais próximo, e várias caixas apontam para o mesmo.
+       Conforme os alvos vão sendo ocupados, a última caixa acaba tendo que
+       atravessar o mapa inteiro — e a Gulosa, que nunca volta atrás, aceita esse
+       custo. Nas instâncias simétricas o alvo mais próximo era mesmo o certo, e
+       ela acertava <b>por sorte</b>.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<section id="poda">
+  <h2><span class="num">10</span>Poda de becos sem saída</h2>
+
+  <p><b>Podar</b> é cortar um galho inteiro da busca sem examiná-lo, porque você
+     já sabe que ali não tem solução.</p>
+
+  <p>No Sokoban existe uma situação assim, fácil de detectar: <b>caixa em canto
+     que não é alvo</b>. Como o agente só empurra e nunca puxa, uma caixa
+     encostada em duas paredes perpendiculares <b>não sai mais dali, nunca</b>. O
+     jogo acabou e ninguém percebeu.</p>
+
+  <div class="painel">
+    <h4>os cantos mortos da instância 1</h4>
+    <div class="lado-a-lado">
+      <div><div id="tab-becos"></div></div>
+      <div>
+        <p class="miudo">Em vermelho, as células onde uma caixa ficaria presa
+           para sempre. Note que o <b>alvo</b> não é marcado: caixa em canto que
+           é alvo é vitória, não derrota.</p>
+        <p class="miudo">São calculados uma única vez, no começo, porque dependem
+           só das paredes e dos alvos — que não mudam durante a busca.</p>
+      </div>
+    </div>
+  </div>
+
+  <h3>E quanto isso ajudou? Pouco.</h3>
+
+  <p>Na instância 2, a poda economizou <b>2,8%</b> dos nós da UCS e <b>0,7%</b>
+     dos do A\*. E o relatório de vocês diz isso com todas as letras, em vez de
+     vender a poda como se fosse decisiva.</p>
+
+  <p>O motivo é a geometria: as instâncias são salas abertas, com só 4 cantos.
+     Num labirinto cheio de quinas o ganho seria bem maior.</p>
+
+  <div class="nota">
+    <span class="rotulo">por que contar isso é bom</span>
+    <p>O roteiro diz, com essas palavras, que <b>um resultado inesperado bem
+       explicado vale mais que um resultado bonito sem análise</b>. Admitir que a
+       otimização mais esperta do trabalho rendeu 2,8% — e explicar por quê — vale
+       mais nota que fingir que ela salvou o dia.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<section id="glossario">
+  <h2><span class="num">11</span>Glossário</h2>
+
+  <div class="glossario">
+    <dl class="termo"><dt>Estado</dt><dd>A fotografia do mundo num instante. Aqui: onde está o agente e onde estão as caixas.</dd></dl>
+    <dl class="termo"><dt>Espaço de estados</dt><dd>Todas as situações possíveis, ligadas pelas ações. Um mapa gigante que a busca vai descobrindo aos pedaços.</dd></dl>
+    <dl class="termo"><dt>Instância</dt><dd>Um caso concreto do problema. Um labirinto específico, com caixas e alvos específicos.</dd></dl>
+    <dl class="termo"><dt>Fronteira</dt><dd>A fila de espera: estados já descobertos, ainda não examinados.</dd></dl>
+    <dl class="termo"><dt>Alcançados</dt><dd>O caderninho de "já vi isso". É o que impede a busca de andar em círculo para sempre.</dd></dl>
+    <dl class="termo"><dt>Nó gerado</dt><dd>Estado criado e posto na fronteira. Foi <b>descoberto</b>.</dd></dl>
+    <dl class="termo"><dt>Nó expandido</dt><dd>Estado tirado da fronteira que teve os vizinhos gerados. Foi <b>examinado</b>. É a métrica que vale.</dd></dl>
+    <dl class="termo"><dt>g(n)</dt><dd>Custo já pago para chegar até este estado. Exato.</dd></dl>
+    <dl class="termo"><dt>h(n)</dt><dd>A heurística: palpite de quanto ainda falta. Estimativa.</dd></dl>
+    <dl class="termo"><dt>f(n)</dt><dd>A nota do nó na fila. Trocar essa fórmula é trocar de algoritmo.</dd></dl>
+    <dl class="termo"><dt>Heurística</dt><dd>Conta rápida que estima o que falta, sem resolver o problema.</dd></dl>
+    <dl class="termo"><dt>Distância de Manhattan</dt><dd>Distância andando só na horizontal e na vertical, como em quarteirões. |Δlinha| + |Δcoluna|.</dd></dl>
+    <dl class="termo"><dt>Relaxamento</dt><dd>Apagar regras do problema até sobrar uma versão fácil. A resposta dela vira a heurística.</dd></dl>
+    <dl class="termo"><dt>Admissível</dt><dd>A heurística nunca chuta para mais. É o que garante que o A* ache a melhor solução.</dd></dl>
+    <dl class="termo"><dt>Consistente</dt><dd>O palpite não dá saltos: de um passo para outro ele cai no máximo o que o passo custou.</dd></dl>
+    <dl class="termo"><dt>Ótimo</dt><dd>O algoritmo sempre acha a solução mais barata. UCS e A* são; a Gulosa não é.</dd></dl>
+    <dl class="termo"><dt>Completo</dt><dd>Se existe solução, o algoritmo acha — desde que não acabe a memória antes.</dd></dl>
+    <dl class="termo"><dt>Poda</dt><dd>Cortar um galho inteiro da busca porque já se sabe que ali não há solução.</dd></dl>
+    <dl class="termo"><dt>Beco sem saída</dt><dd>Estado de onde é impossível chegar ao objetivo. Aqui: caixa em canto que não é alvo.</dd></dl>
+    <dl class="termo"><dt>Explosão combinatória</dt><dd>O espaço de estados crescendo absurdamente rápido a cada peça a mais.</dd></dl>
+    <dl class="termo"><dt>Fila de prioridade</dt><dd>Fila que entrega sempre o menor primeiro. É como a fronteira é organizada (<code>heapq</code>).</dd></dl>
+    <dl class="termo"><dt>Busca em largura</dt><dd>Examina tudo a 1 passo, depois tudo a 2 passos. Quando todos os custos são 1, a UCS vira exatamente isto.</dd></dl>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<section id="perguntas">
+  <h2><span class="num">12</span>Se te perguntarem</h2>
+
+  <p>O roteiro avisa que <b>qualquer integrante pode ser questionado sobre
+     qualquer linha</b>. Estas são as perguntas mais prováveis, com a resposta
+     curta.</p>
+
+  <details class="pergunta">
+    <summary>O que é o estado do problema de vocês?</summary>
+    <div class="resposta">
+      <p>A posição do agente mais a posição de todas as caixas, guardadas numa
+         tupla ordenada. <b>Paredes e alvos não entram</b>, porque não mudam
+         durante a busca.</p>
+    </div>
+  </details>
+
+  <details class="pergunta">
+    <summary>Por que não bastava a posição do agente?</summary>
+    <div class="resposta">
+      <p>Porque duas situações com o agente na mesma célula e as caixas em
+         lugares diferentes são situações <b>diferentes</b>. Guardando só o
+         agente, o controle de estados já vistos descarta caminhos válidos, e o
+         programa responde "sem solução" para labirintos que têm solução —
+         <b>sem dar erro nenhum</b>.</p>
+    </div>
+  </details>
+
+  <details class="pergunta">
+    <summary>Por que testar o objetivo na retirada e não na geração?</summary>
+    <div class="resposta">
+      <p>Porque na geração você só sabe que achou <b>um</b> caminho, não que
+         achou o <b>mais barato</b>. Enquanto o nó está na fila, ainda pode
+         aparecer um caminho melhor até ele. Testar cedo devolve solução
+         subótima em alguns casos e parece correto em todos os outros.</p>
+    </div>
+  </details>
+
+  <details class="pergunta">
+    <summary>Como vocês sabem que a heurística é admissível?</summary>
+    <div class="resposta">
+      <p>Por três vias. <b>Por construção:</b> ela é a resposta exata de um
+         problema relaxado, e apagar regras nunca deixa a solução mais cara.
+         <b>Por argumento direto:</b> cada empurrão move a caixa uma célula,
+         então levar uma caixa a <i>d</i> células custa no mínimo <i>d</i>.
+         <b>Por medição:</b> em todas as instâncias, A* e UCS devolveram o mesmo
+         custo — se a heurística exagerasse, o A* teria devolvido pior em algum
+         momento.</p>
+    </div>
+  </details>
+
+  <details class="pergunta">
+    <summary>A Gulosa expandiu muito menos nós. Ela não é a melhor?</summary>
+    <div class="resposta">
+      <p>Não. Nós expandidos mede <b>trabalho</b>, não <b>qualidade</b>. Por essa
+         métrica sozinha, o melhor algoritmo seria o que responde qualquer coisa
+         na hora. A Gulosa é a única das três que erra: na instância 3 devolveu
+         40 onde o ótimo é 28.</p>
+    </div>
+  </details>
+
+  <details class="pergunta">
+    <summary>Se relaxassem mais regras, a heurística ficaria melhor?</summary>
+    <div class="resposta">
+      <p>Pior. Relaxar mais deixa a heurística mais segura, mas <b>menos
+         informativa</b> — ela passa a distinguir menos bem os estados bons dos
+         ruins. No extremo, <code>h = 0</code> é perfeitamente admissível e
+         perfeitamente inútil: o A* vira UCS.</p>
+      <p>O caminho interessante é o oposto: relaxar <b>menos</b>. Devolver as
+         paredes ao problema relaxado, por exemplo, daria um palpite mais alto e
+         ainda admissível.</p>
+    </div>
+  </details>
+
+  <details class="pergunta">
+    <summary>Por que a UCS não terminou a instância 4?</summary>
+    <div class="resposta">
+      <p>Porque ela não tem noção de onde fica o alvo e examina o espaço de
+         estados quase inteiro — e ali são 64 milhões de configurações. Ela foi
+         interrompida no teto de 3 milhões de nós, que o grupo adotou por
+         memória: nesse ponto o processo já ocupava 934 MB.</p>
+      <p><b>Importante:</b> a UCS não está errada. Com o teto elevado ela
+         termina, em 82,5 s, chegando ao mesmo custo 26 do A* — gastando 2 GB de
+         RAM. O ponto não é que ela erre, é que ela não cabe.</p>
+    </div>
+  </details>
+
+  <details class="pergunta">
+    <summary>Por que a UCS se comporta como busca em largura?</summary>
+    <div class="resposta">
+      <p>Porque todos os movimentos custam 1. Ordenar por custo acumulado é a
+         mesma coisa que ordenar por número de passos. Por isso vocês rodaram
+         também a variante em que empurrar custa 2 — ali a UCS deixa de ser busca
+         em largura e o comportamento muda na hora.</p>
+    </div>
+  </details>
+
+  <details class="pergunta">
+    <summary>Por que não usaram uma biblioteca pronta?</summary>
+    <div class="resposta">
+      <p>O roteiro proíbe, e o aprendizado está justamente em escrever a fila de
+         prioridade, o controle de estados alcançados e o teste de objetivo na
+         mão. As únicas bibliotecas usadas são <code>heapq</code>,
+         <code>itertools</code> e <code>time</code>, todas da biblioteca padrão
+         do Python.</p>
+    </div>
+  </details>
+
+  <details class="pergunta">
+    <summary>O que é aquele contador estranho na fila de prioridade?</summary>
+    <div class="resposta">
+      <p>É um critério de desempate. Quando dois nós têm o mesmo <code>f</code>,
+         o <code>heapq</code> tenta comparar o item seguinte da tupla. Se esse
+         item fosse o próprio nó, o Python tentaria comparar dois objetos e
+         levantaria <code>TypeError</code>. O contador garante que o desempate
+         seja sempre por um número inteiro — a ordem de chegada.</p>
+    </div>
+  </details>
+</section>
+
+<footer style="border-top:1px solid var(--linha);padding-top:24px;color:var(--texto-2);font-size:14px">
+  <p>Os números deste guia vêm do <code>resultados.txt</code>, a saída real da
+     execução do trabalho. As buscas que rodam nesta página são escritas em
+     JavaScript para poder mostrar a fronteira por dentro — e conferem com o
+     Python: <span id="conferencia"></span></p>
+  <p><a href="../../apresentacoes/ia-sokoban/" style="color:var(--destaque)">Ver os slides do seminário &rarr;</a></p>
+</footer>
+
+</div>
+
+<script src="../../apresentacoes/ia-sokoban/dados.js"></script>
+<script src="../../apresentacoes/ia-sokoban/demos.js"></script>
+<script src="guia.js"></script>
+</body>
+</html>
