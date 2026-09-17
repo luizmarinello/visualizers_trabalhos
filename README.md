@@ -22,6 +22,9 @@ guias/
     index.html                  guia de estudo: o que é cada conceito
     guia.js                     as demonstrações interativas
     guia.css                    layout de documento (o resto vem do tema)
+  roteiro-do-seminario/
+    index.html                  o que falar, slide a slide
+    roteiro.css                 formato de roteiro, com estilo de impressão
 ```
 
 Os **guias** são páginas que rolam, não apresentações. Servem para estudar antes

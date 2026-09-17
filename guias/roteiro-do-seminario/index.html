@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="escuro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roteiro do seminário — o que falar, na ordem</title>
+<link rel="stylesheet" href="../../assets/style.css">
+<link rel="stylesheet" href="../busca-em-ia/guia.css">
+<link rel="stylesheet" href="roteiro.css">
+</head>
+<body>
+
+<button class="tema" id="botao-tema">tema</button>
+
+<div class="guia">
+
+<header class="topo">
+  <a class="volta" href="../../">&larr; voltar</a>
+  <h1>Roteiro do seminário</h1>
+  <p>O que falar, em que ordem, e o que fazer com as mãos enquanto fala.
+     Dois roteiros: o do código e o do resto.</p>
+</header>
+
+<nav class="indice">
+  <h2>O que tem aqui</h2>
+  <ol>
+    <li><a href="#codigo-sim">Mostrar código: sim ou não?</a></li>
+    <li><a href="#antes">Antes do dia</a></li>
+    <li><a href="#quem">Quem fala o quê</a></li>
+    <li><a href="#roteiro-codigo">Roteiro 1 — o código</a></li>
+    <li><a href="#roteiro-resto">Roteiro 2 — o resto</a></li>
+    <li><a href="#plano-b">Plano B</a></li>
+    <li><a href="#ensaio">Como ensaiar</a></li>
+  </ol>
+</nav>
+
+<!-- ===================================================================== -->
+<section id="codigo-sim">
+  <h2><span class="num">00</span>Mostrar código: sim ou não?</h2>
+
+  <p><b>Rodar o programa: sim, obrigatoriamente.</b> O roteiro do professor tem
+     "Demonstração do programa funcionando" na lista de critérios de avaliação do
+     seminário, e diz literalmente: <i>"Levem o programa pronto para rodar. Falha
+     técnica na hora não é justificativa."</i> Não é opcional.</p>
+
+  <p><b>Mostrar código na tela: sim, mas uma tela só.</b> E por um motivo bem
+     específico: existe um desconto de <b>15%</b> para quem entregar três funções
+     de busca copiadas. Abrir o <code>busca.py</code> e mostrar que existe
+     <i>uma</i> função e três <code>f</code> de uma linha cada é a maneira mais
+     rápida de tirar essa dúvida da cabeça do professor.</p>
+
+  <div class="cuidado">
+    <p><b>O erro clássico:</b> abrir o editor e sair rolando por três arquivos
+       lendo código em voz alta. Isso mata a apresentação. Ninguém consegue ler
+       código projetado enquanto ouve alguém falar — as duas coisas competem pela
+       mesma atenção.</p>
+  </div>
+
+  <h3>A regra prática</h3>
+  <ul>
+    <li><b>Código lido</b>: só o slide 5, que já traz o trecho formatado e
+        grande. Nada de rolar arquivo.</li>
+    <li><b>Código aberto no editor</b>: no máximo <b>o busca.py, uma vez, por 20
+        segundos</b>, para provar que a função é uma só.</li>
+    <li><b>Código rodando</b>: bastante. É isso que impressiona e é isso que o
+        roteiro cobra.</li>
+  </ul>
+
+  <p>Resumindo em uma frase: <b>mostrem o programa funcionando, não o programa
+     escrito.</b></p>
+</section>
+
+<!-- ===================================================================== -->
+<section id="antes">
+  <h2><span class="num">01</span>Antes do dia</h2>
+
+  <p>Metade dos desastres de seminário acontece por coisa desta lista.</p>
+
+  <ul class="checklist">
+    <li><b>Rodar tudo na máquina da apresentação, um dia antes.</b> Não na
+        máquina de quem programou — na que vai estar na sala. Python instalado,
+        tkinter funcionando, tudo.</li>
+    <li><b>Aumentar a fonte do terminal.</b> O que se lê a 40 cm não se lê a 6
+        metros. No Windows Terminal: <kbd>Ctrl</kbd> + <kbd>+</kbd> umas cinco
+        vezes.</li>
+    <li><b>Deixar dois terminais abertos</b>, os dois já dentro da pasta
+        <code>TrabalhoIA_Sokoban</code>. Vão ser usados ao mesmo tempo.</li>
+    <li><b>Abrir o <code>resultados.txt</code></b> num editor, já rolado até a
+        instância 4.</li>
+    <li><b>Abrir os slides em tela cheia</b> (tecla <kbd>f</kbd>) e testar o
+        projetor. Se as cores lavarem, aperte <kbd>t</kbd> para o tema claro.</li>
+    <li><b>Ler as notas de cada slide antes</b> (tecla <kbd>n</kbd>). Elas
+        aparecem para a sala inteira — não é para abrir durante.</li>
+    <li><b>Preencher nomes e matrículas</b> na capa do relatório, no README e
+        nos slides 1 e 2.</li>
+    <li><b>Baixar um backup dos slides</b>: salve a página pelo navegador. Se a
+        internet da sala cair, você ainda tem.</li>
+  </ul>
+</section>
+
+<!-- ===================================================================== -->
+<section id="quem">
+  <h2><span class="num">02</span>Quem fala o quê</h2>
+
+  <p>Total de <b>13m55s</b>, dentro da janela de 10 a 15 minutos. Todos falam,
+     que é exigência do roteiro.</p>
+
+  <div class="pessoas">
+    <div class="pessoa">
+      <h4>[nome 1] — o problema</h4>
+      <p class="slides">slides 1 a 4 · 2m50s</p>
+      <p>Abertura, as regras do jogo e a modelagem do estado.</p>
+    </div>
+    <div class="pessoa">
+      <h4>[nome 2] — o código</h4>
+      <p class="slides">slides 5 a 7 · 3m35s</p>
+      <p>A função única, a heurística e a corrida das três buscas.</p>
+    </div>
+    <div class="pessoa">
+      <h4>[nome 3] — os experimentos</h4>
+      <p class="slides">slides 8 a 11 · 3m45s</p>
+      <p>As tabelas, a instância 4, a poda e o bug mais difícil.</p>
+    </div>
+    <div class="pessoa">
+      <h4>[nome 4] — a análise</h4>
+      <p class="slides">slides 12 a 15 · 3m45s</p>
+      <p>As surpresas, o uso real, a demonstração ao vivo e o fecho.</p>
+    </div>
+  </div>
+
+  <div class="cuidado">
+    <p><b>Combinem a passagem de bastão.</b> A troca desengonçada entre pessoas é
+       o que mais estraga ritmo de seminário. Quem termina diz uma frase de
+       entrega — <i>"e aí o [nome 2] mostra como isso virou código"</i> — e sai
+       de perto da tela.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<section id="roteiro-codigo">
+  <h2><span class="num">03</span>Roteiro 1 — o código</h2>
+
+  <p>Três slides do <b>[nome 2]</b> e a demonstração ao vivo do <b>[nome 4]</b>.
+     O texto em azul é o que falar; pode ser dito com outras palavras, mas a
+     ordem das ideias importa.</p>
+
+  <div class="bloco">
+    <header><span class="n">slide 5</span><h3>Uma função de busca. Três f.</h3>
+      <span class="quem">[nome 2]</span><span class="tempo">85s</span></header>
+    <div class="corpo">
+      <div class="fala">
+        <p>"Essa é a parte que o trabalho mais cobra. O enunciado diz, com todas
+           as letras, que quem entregar <b>três funções de busca copiadas perde
+           15%</b> — mesmo que funcione. Então a primeira coisa que a gente fez
+           foi escrever uma função só."</p>
+        <p>"Do lado esquerdo está ela. Ela recebe o problema e recebe uma função
+           <b>f</b>. Ela não sabe o que é Sokoban, não sabe o que é caixa. Ela só
+           tira o menor <b>f</b> da fila, pergunta se é o objetivo, e gera os
+           vizinhos."</p>
+        <p>"Do lado direito estão os três algoritmos. <b>Cada um é uma linha.</b>
+           A UCS devolve <b>g</b>, que é o que já foi gasto. A Gulosa devolve
+           <b>h</b>, que é o palpite do que falta. O A-estrela devolve a soma dos
+           dois. É só isso que muda entre eles."</p>
+        <p>"E tem três detalhes aqui que não são enfeite. O principal é este:
+           <b>o objetivo é testado quando o nó sai da fila, não quando ele é
+           criado.</b> Enquanto ele está na fila, ainda pode aparecer um caminho
+           mais barato até ele. Testar cedo demais devolve uma solução que
+           funciona mas não é a mais barata — e só em alguns casos, o que é pior
+           ainda, porque parece certo."</p>
+      </div>
+      <div class="faz">Se sobrar tempo, acrescente os outros dois: o contador de
+        desempate na fila (sem ele o <code>heapq</code> tentaria comparar dois
+        nós e levantaria <code>TypeError</code>) e o dicionário de alcançados
+        (é ele que impede a busca de girar em círculo).</div>
+      <div class="faz"><b>Aqui é o momento de abrir o editor.</b> Mostre o
+        <code>busca.py</code>, role até as três funções <code>f</code>, e diga:
+        <i>"são essas três linhas, e não existe outra função de busca no
+        projeto"</i>. <b>20 segundos, e volte para os slides.</b></div>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <header><span class="n">slide 6</span><h3>A heurística e de onde ela sai</h3>
+      <span class="quem">[nome 2]</span><span class="tempo">65s</span></header>
+    <div class="corpo">
+      <div class="fala">
+        <p>"A heurística é o palpite. Para cada caixa, a gente mede a distância
+           até o alvo mais próximo andando só na horizontal e na vertical — isso
+           se chama <b>distância de Manhattan</b>, porque em Manhattan você não
+           corta pelo meio do quarteirão, anda pelas ruas."</p>
+        <p>"Mas a pergunta que interessa é: <b>de onde ela saiu?</b> A resposta é
+           <b>relaxamento</b>. A gente apagou regras do problema até sobrar uma
+           versão tão fácil que dá para resolver de cabeça. Apagamos as paredes,
+           apagamos as outras caixas, e apagamos o deslocamento do agente — nessa
+           versão ele se teletransporta para trás da caixa, de graça."</p>
+        <p>"Nessa versão fácil, mover uma caixa quatro células custa quatro. Por
+           isso o palpite é quatro."</p>
+        <p>"E ela é <b>admissível</b>, ou seja, nunca chuta para mais. Por duas
+           razões. Uma caixa só anda sendo empurrada, e cada empurrão move ela
+           uma célula — então nenhuma solução real custa menos que a distância. E
+           as três regras que a gente apagou só <b>removem</b> obstáculos;
+           nenhuma delas cria atalho."</p>
+      </div>
+      <div class="faz">Se perguntarem sobre duas caixas mirando o mesmo alvo:
+        <i>"sim, isso acontece, e isso <b>subestima</b>. Subestimar é exatamente
+        o que a admissibilidade permite. O que quebraria seria superestimar."</i></div>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <header><span class="n">slide 7</span><h3>A corrida</h3>
+      <span class="quem">[nome 2]</span><span class="tempo">65s</span></header>
+    <div class="corpo">
+      <div class="faz"><b>Clique em "correr" e fique calado</b> enquanto a
+        animação roda inteira. São uns 12 segundos. O silêncio aqui vale mais que
+        qualquer explicação — o padrão fala sozinho.</div>
+      <div class="fala">
+        <p>"Os três estão resolvendo o <b>mesmo</b> labirinto, um nó por vez, na
+           ordem real em que cada um retirou os estados da fila. A cor marca por
+           onde a caixa já passou."</p>
+        <p>"Olhem o padrão. A <b>UCS pinta o mapa inteiro</b> — ela não faz ideia
+           de onde fica o alvo, então abre um círculo em todas as direções. A
+           <b>Gulosa vai quase reto</b>. O <b>A-estrela fica no meio</b>."</p>
+        <p>"Os números: a UCS expandiu 73 nós, o A-estrela 38, a Gulosa 20. E os
+           três acharam a mesma solução, de custo 11. <b>Guardem isso</b>, porque
+           na instância 3 isso muda."</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <header><span class="n">slide 14</span><h3>Demonstração ao vivo</h3>
+      <span class="quem">[nome 4]</span><span class="tempo">100s</span></header>
+    <div class="corpo">
+      <div class="cuidado">
+        <p><b>O truque que salva esta parte:</b> o <code>--completo</code> leva
+           uns 50 segundos, e 50 segundos de silêncio olhando terminal é uma
+           eternidade. Então <b>dispare ele no segundo terminal lá no slide
+           12</b>, dois slides antes. Quando você chegar aqui, ele já terminou e
+           você só mostra o resultado.</p>
+      </div>
+
+      <div class="faz"><b>No slide 12, enquanto o [nome 4] começa a falar das
+        surpresas</b>, alguém dispara no terminal 2:</div>
+      <div class="terminal"><span class="cmd">python main.py --completo</span></div>
+
+      <p><b>1. Abrir com credibilidade</b> — 10s, no terminal 1:</p>
+      <div class="terminal"><span class="cmd">python teste.py</span>
+<span class="saida">ok  gabarito: instancia 1 resolve em 11 movimentos, caminho valido
+ok  UCS e A* devolvem o mesmo custo nas instancias 1 e 2
+ok  heuristica admissivel ao longo da solucao otima
+ok  com h=0 os tres expandem exatamente os mesmos nos
+ok  o estado sai canonico em 50 empurroes conferidos</span></div>
+      <div class="fala">
+        <p>"Antes de mostrar resultado, isso aqui confere se a busca está certa:
+           o gabarito da ficha, a UCS e o A-estrela concordando no custo, a
+           heurística nunca passando do custo real, e as três virando o mesmo
+           algoritmo com h igual a zero. Leva um segundo."</p>
+      </div>
+
+      <p><b>2. A solução, passo a passo</b> — 15s:</p>
+      <div class="terminal"><span class="cmd">python main.py --demo</span></div>
+      <div class="fala">
+        <p>"Essa é a solução ótima da instância 1, desenhada movimento a
+           movimento. Onze movimentos — e reparem que a caixa só anda quatro
+           células: os outros sete são o agente caminhando para ficar atrás
+           dela."</p>
+      </div>
+
+      <p><b>3. A interface</b> — 45s. É o extra de +10%, então vale mostrar bem:</p>
+      <div class="terminal"><span class="cmd">python interface.py</span></div>
+      <div class="faz">Instância <b>2</b> → algoritmo <b>Gulosa</b> →
+        <b>Resolver</b> → <b>Animar busca</b>. Deixe pintar.</div>
+      <div class="faz">Troque para <b>A*</b> → <b>Resolver</b> →
+        <b>Animar busca</b>. Deixe pintar.</div>
+      <div class="fala">
+        <p>"Aqui dá para ver a diferença de outro jeito. A Gulosa acende quase
+           nada do mapa. O A-estrela acende mais, mas nem perto do que a UCS
+           acenderia."</p>
+        <p>"E uma coisa importante sobre esta tela: <b>ela não implementa busca
+           nenhuma</b>. Ela chama a mesma função <code>busca()</code> do
+           <code>busca.py</code>. Trocar o algoritmo nesse menu é trocar a função
+           <b>f</b> — exatamente como no resto do trabalho."</p>
+      </div>
+
+      <p><b>4. A instância 4</b> — 20s, mudando para o terminal 2, que já
+         terminou:</p>
+      <div class="terminal"><span class="saida">UCS   nao usa  -  -  2.022.849  3.000.000  nao concluiu em 29s (teto de nos)
+Gulosa  manhattan  34  34  3.647  4.153  0.039
+A*      manhattan  26  26  74.120  130.955  1.208</span></div>
+      <div class="fala">
+        <p>"Essa linha aqui é o resultado central do trabalho. A UCS gerou três
+           milhões de nós e parou <b>sem ter achado a solução</b>. O A-estrela
+           resolveu o mesmo problema em pouco mais de um segundo."</p>
+      </div>
+
+      <p><b>5. Fechar mostrando a evidência</b> — 10s:</p>
+      <div class="faz">Mude para o editor com o <code>resultados.txt</code>
+        aberto.</div>
+      <div class="fala">
+        <p>"E esse arquivo aqui é a saída completa da execução. <b>Cada número
+           dos slides e do relatório saiu daqui.</b> Nada foi digitado à mão."</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<section id="roteiro-resto">
+  <h2><span class="num">04</span>Roteiro 2 — o resto</h2>
+
+  <div class="bloco">
+    <header><span class="n">slide 1</span><h3>Capa</h3>
+      <span class="quem">[nome 1]</span><span class="tempo">15s</span></header>
+    <div class="corpo">
+      <div class="fala">
+        <p>"Boa tarde. O nosso é o <b>Problema 8</b> do catálogo: empurrar caixas
+           no labirinto, o Sokoban. Um agente anda pelo labirinto e empurra
+           caixas até os alvos marcados no chão."</p>
+        <p>"E a coisa mais importante que a gente tem para contar é essa aqui
+           embaixo: <b>não escrevemos três buscas. Escrevemos uma só, e trocamos
+           a função que ordena a fila.</b> Tudo o que vem depois é consequência
+           disso."</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <header><span class="n">slide 2</span><h3>Como dividimos</h3>
+      <span class="quem">[nome 1]</span><span class="tempo">15s</span></header>
+    <div class="corpo">
+      <div class="fala">
+        <p>"Só para vocês saberem quem fala o quê: eu pego o problema e a
+           modelagem, o [nome 2] pega o código, o [nome 3] os experimentos e o
+           [nome 4] a análise."</p>
+        <p>"Mas <b>a divisão é de fala, não de conhecimento</b> — qualquer um de
+           nós responde sobre qualquer linha."</p>
+      </div>
+      <div class="faz">Essa última frase é para dizer <b>olhando para o
+        professor</b>. O roteiro dele avisa que qualquer integrante pode ser
+        questionado sobre qualquer linha; dizer isso primeiro mostra que vocês
+        sabem.</div>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <header><span class="n">slide 3</span><h3>Duas regras. Só isso.</h3>
+      <span class="quem">[nome 1]</span><span class="tempo">55s</span></header>
+    <div class="corpo">
+      <div class="fala">
+        <p>"O jogo tem duas regras, e só duas."</p>
+        <p>"A primeira: o agente anda uma célula por vez. Cima, baixo, esquerda,
+           direita. Nunca atravessa parede."</p>
+        <p>"A segunda, que é a que importa: ele <b>empurra, nunca puxa</b>. Se tem
+           caixa no caminho, ela vai para a célula seguinte, na mesma direção — e
+           só se essa célula estiver livre."</p>
+      </div>
+      <div class="faz"><b>Jogue de verdade.</b> Use as setas. Dê uns três
+        movimentos normais, e então <b>empurre a caixa para o canto de cima à
+        esquerda, de propósito</b>.</div>
+      <div class="fala">
+        <p>"Pronto. Empurrei a caixa para o canto. E agora <b>ela não sai mais de
+           lá, nunca</b> — porque eu não posso puxar. O jogo acabou, e o programa
+           ainda não sabe disso."</p>
+        <p>"É dessa segunda regra que sai a dificuldade toda do problema."</p>
+      </div>
+      <div class="cuidado">
+        <p><b>Neste slide as setas controlam o jogo, não a apresentação.</b> Para
+           avançar, use o <b>espaço</b>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <header><span class="n">slide 4</span><h3>O estado</h3>
+      <span class="quem">[nome 1]</span><span class="tempo">85s</span></header>
+    <div class="corpo">
+      <div class="faz">Este é o slide mais importante da apresentação inteira.
+        <b>Fale mais devagar do que nos outros.</b></div>
+      <div class="fala">
+        <p>"<b>Estado é a fotografia do mundo num instante.</b> E decidir o que
+           entra nessa fotografia foi o que mais nos ensinou no trabalho."</p>
+        <p>"O nosso estado é a posição do agente <b>mais</b> a posição de todas as
+           caixas, numa tupla ordenada. São três decisões, e o interessante é que
+           elas <b>erram de formas diferentes</b>."</p>
+        <p>"A primeira: <b>não basta a posição do agente.</b> Se guardar só o
+           agente, duas situações completamente diferentes viram a mesma, e a
+           busca descarta o caminho que resolvia. E <b>não dá erro nenhum</b> — o
+           programa roda até o fim e responde 'sem solução' para um labirinto que
+           tem solução."</p>
+        <p>"A segunda: <b>tupla, e não lista</b>, porque o estado é chave de
+           dicionário e lista não pode ser chave. Esse erro é o bonzinho dos três:
+           quebra na hora e diz <code>unhashable type: list</code>."</p>
+        <p>"A terceira: <b>ordenada</b>. Duas caixas nas mesmas células são a
+           mesma situação, não importa a ordem em que estão escritas. Sem ordenar
+           não dá erro nenhum — só fica mais lento."</p>
+        <p>"Reparem no padrão: <b>o erro que trava é o menos perigoso.</b> O
+           perigoso é o primeiro, que responde errado em silêncio."</p>
+      </div>
+      <div class="faz">Frase de passagem: <i>"e aí o [nome 2] mostra como isso
+        virou código"</i>.</div>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <header><span class="n">slide 8</span><h3>Os números</h3>
+      <span class="quem">[nome 3]</span><span class="tempo">50s</span></header>
+    <div class="corpo">
+      <div class="cuidado"><p><b>Não leia a tabela.</b> Ninguém acompanha número
+        lido em voz alta. Aponte três coisas e siga.</p></div>
+      <div class="fala">
+        <p>"Não vou ler a tabela. Vou apontar três coisas."</p>
+        <p>"<b>Primeira:</b> nas instâncias 1 e 2 os três acham o mesmo custo.
+           Empatam em qualidade."</p>
+        <p>"<b>Segunda:</b> o A-estrela sempre expande menos que a UCS e acha a
+           mesma resposta. Na instância 2 são 2.411 contra 12.606. Na 3, 159 mil
+           contra um milhão e meio."</p>
+        <p>"<b>Terceira, e é aqui que a coisa muda:</b> na instância 3 a Gulosa
+           quebra. Ela devolve 40 onde o ótimo é 28. <b>Quarenta e três por cento
+           pior.</b>"</p>
+        <p>"E ela não erra por bug. Ela erra <b>por design</b>: olha só o palpite
+           e nunca reconsidera."</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <header><span class="n">slide 9</span><h3>Instância 4: a UCS desiste</h3>
+      <span class="quem">[nome 3]</span><span class="tempo">70s</span></header>
+    <div class="corpo">
+      <div class="fala">
+        <p>"E aqui está o resultado que a gente considera o principal do
+           trabalho."</p>
+        <p>"Instância 4, quatro caixas. A UCS gerou <b>três milhões de nós</b>,
+           bateu no teto que a gente adotou, e foi interrompida <b>sem nunca ter
+           achado a solução</b>."</p>
+        <p>"O A-estrela resolveu o mesmo problema expandindo 74 mil nós, em pouco
+           mais de um segundo."</p>
+      </div>
+      <div class="faz"><b>Pare de falar por dois segundos aqui.</b> Deixe o
+        número no ar. É o momento mais forte da apresentação.</div>
+      <div class="fala">
+        <p>"Não é o A-estrela ser algumas vezes mais rápido. É <b>um terminar e o
+           outro não</b>."</p>
+        <p>"Sobre o teto: a gente adotou 120 segundos <b>e</b> três milhões de
+           nós. E o que importa é o de nós, porque <b>o que acaba primeiro é
+           memória, não tempo</b>. O programa mede: nesse ponto ele já ocupa 934
+           megabytes."</p>
+        <p>"E uma ressalva importante, para não passarmos uma ideia errada: <b>a
+           UCS não está errada.</b> Com o teto elevado ela termina — em 82
+           segundos, chegando ao mesmo custo 26 do A-estrela. Só que gastando 2
+           gigas de RAM. O ponto não é que ela erra. É que <b>ela não cabe</b>."</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <header><span class="n">slide 10</span><h3>Becos sem saída e a poda</h3>
+      <span class="quem">[nome 3]</span><span class="tempo">40s</span></header>
+    <div class="corpo">
+      <div class="fala">
+        <p>"Lembram da caixa que o [nome 1] empurrou para o canto lá no começo? É
+           disso que se trata."</p>
+        <p>"Célula livre, que não é alvo, com parede em dois lados. Caixa que
+           entra ali não sai mais. A gente calcula esses cantos uma vez, no
+           início, e descarta qualquer estado que ponha uma caixa num deles."</p>
+        <p>"E o resultado honesto: <b>economizou 2,8%</b> dos nós da UCS. Pouco."</p>
+        <p>"O motivo é a geometria — nossas instâncias são salas abertas, com só
+           quatro cantos. Num labirinto cheio de quinas o ganho seria bem maior.
+           Mas o número é 2,8%, e a gente prefere dizer isso a vender a poda como
+           se tivesse salvado o dia."</p>
+      </div>
+      <div class="faz">Essa última frase vale nota. O roteiro do professor diz
+        que <b>resultado inesperado bem explicado vale mais que resultado bonito
+        sem análise</b>.</div>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <header><span class="n">slide 11</span><h3>O bug mais difícil</h3>
+      <span class="quem">[nome 3]</span><span class="tempo">65s</span></header>
+    <div class="corpo">
+      <div class="fala">
+        <p>"O bug que mais nos custou."</p>
+        <p>"O sintoma: <b>'sem solução'</b>, num labirinto que a gente resolvia à
+           mão em trinta segundos. Sem exceção, sem travar. Só a resposta errada,
+           com toda a calma do mundo."</p>
+        <p>"A gente foi procurar na busca. Conferiu a fila, o teste de objetivo,
+           o dicionário de alcançados. Tudo certo — e o labirinto da ficha
+           continuava resolvendo em 11 movimentos."</p>
+        <p>"<b>O problema estava no mapa, não no código.</b> A gente tinha
+           desenhado corredores de largura 1, porque parecia mais labirinto. Só
+           que para empurrar uma caixa que precisa fazer <b>curva</b>, o agente
+           tem que chegar do lado oposto dela — e num corredor de largura 1 não
+           tem por onde."</p>
+        <p>"O programa estava certo. <b>A instância é que era insolúvel.</b>"</p>
+        <p>"Foi o que mais tempo levou no trabalho inteiro, e a gente perdeu esse
+           tempo procurando no lugar errado. Depois do segundo caso, rodar o
+           A-estrela antes de adotar qualquer instância virou parte do
+           processo."</p>
+      </div>
+      <div class="faz">Se o bug de vocês tiver sido outro, <b>conte o de
+        vocês</b>. Este slide existe porque o roteiro pede "o bug mais difícil"
+        por nome, e vale mais nota que dizer que deu tudo certo.</div>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <header><span class="n">slide 12</span><h3>Três coisas que não esperávamos</h3>
+      <span class="quem">[nome 4]</span><span class="tempo">75s</span></header>
+    <div class="corpo">
+      <div class="faz"><b>Alguém dispara o <code>--completo</code> no terminal 2
+        agora</b>, para estar pronto no slide 14.</div>
+      <div class="fala">
+        <p>"Três coisas que a gente não esperava."</p>
+        <p>"<b>A primeira.</b> A gente rodou a instância 1 com a heurística
+           zerada. Os três expandiram <b>exatamente os mesmos 73 nós</b>.
+           Idênticos. E faz sentido: com h igual a zero, o A-estrela vira UCS e a
+           Gulosa vira busca em largura. É a melhor evidência que a gente
+           conseguiu de que a função de busca é mesmo uma só."</p>
+        <p>"<b>A segunda.</b> Rodamos a variante em que andar custa 1 e empurrar
+           custa 2. Aí custo e número de passos deixam de ser a mesma coisa: 16
+           ações custando 22. E a UCS <b>piorou</b> — de 12.606 para 15.617 nós.
+           Ela deixou de se comportar como busca em largura."</p>
+        <p>"<b>A terceira</b>, que foi a que mais nos surpreendeu: no mesmo teste,
+           o A-estrela <b>melhorou</b>. De 2.411 para 1.401 nós. Quarenta e dois
+           por cento a menos."</p>
+        <p>"Por quê? Porque a heurística também passou a valer 2 por célula.
+           Dentro de <b>f = g + h</b> ela ficou proporcionalmente mais
+           informativa. Mesmo problema, mesma heurística — só mudou o preço de
+           empurrar."</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <header><span class="n">slide 13</span><h3>Qual usar, fora da sala de aula</h3>
+      <span class="quem">[nome 4]</span><span class="tempo">35s</span></header>
+    <div class="corpo">
+      <div class="fala">
+        <p>"Rapidamente, onde usar cada um na vida real."</p>
+        <p>"<b>UCS</b> quando não existe estimativa confiável e o espaço cabe na
+           memória. A vantagem dela é não exigir conhecimento nenhum do
+           problema."</p>
+        <p>"<b>Gulosa</b> quando uma resposta boa agora vale mais que a melhor
+           resposta daqui a uma hora. Roteirização em tempo real, sugestão
+           enquanto o usuário digita."</p>
+        <p>"<b>A-estrela</b> é o padrão. GPS, movimentação em jogos, rota de
+           robô."</p>
+        <p>"E a conclusão de projeto que a gente tirou é essa: com uma heurística
+           admissível <b>e consistente</b>, o A-estrela nunca expande mais que a
+           UCS. Então a pergunta de engenharia quase nunca é 'qual algoritmo
+           usar'. É <b>'que heurística eu consigo escrever'</b>."</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bloco">
+    <header><span class="n">slide 15</span><h3>Fechamento</h3>
+      <span class="quem">[nome 4]</span><span class="tempo">15s</span></header>
+    <div class="corpo">
+      <div class="fala">
+        <p>"Fechando. <b>Uma função, três f, resultados muito diferentes.</b> A
+           UCS é ótima e não chega ao fim. A Gulosa chega em milissegundos e erra
+           por 43%. O A-estrela faz as duas coisas — porque tem uma estimativa do
+           que falta."</p>
+        <p>"Se a gente recomeçasse, começaria pela heurística, não pelo código."</p>
+        <p>"Obrigado. Perguntas?"</p>
+      </div>
+      <div class="faz"><b>Três frases e pare.</b> Não resuma a apresentação de
+        novo. E não encerre com "é isso" — encerre com a pergunta.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<section id="plano-b">
+  <h2><span class="num">05</span>Plano B</h2>
+
+  <p>O roteiro do professor avisa que <i>falha técnica na hora não é
+     justificativa</i>. Então vale ter resposta pronta para cada coisa que pode
+     dar errado.</p>
+
+  <table>
+    <tr><th style="text-align:left">Se…</th><th style="text-align:left">Faça</th></tr>
+    <tr><td style="text-align:left">A internet cair</td><td style="text-align:left">Use a cópia dos slides salva no computador. Por isso o item do checklist.</td></tr>
+    <tr><td style="text-align:left">O Python não rodar</td><td style="text-align:left">Mostre o <code>resultados.txt</code>, que é a saída real já gravada, e siga. Não tente consertar na frente da sala.</td></tr>
+    <tr><td style="text-align:left">A interface não abrir</td><td style="text-align:left">É o extra opcional, não o trabalho. Diga "temos a interface, mas vou mostrar no terminal" e siga.</td></tr>
+    <tr><td style="text-align:left">O <code>--completo</code> travar</td><td style="text-align:left">Aperte <kbd>Ctrl</kbd>+<kbd>C</kbd> e mostre o <code>resultados.txt</code>. O número é o mesmo.</td></tr>
+    <tr><td style="text-align:left">Estiver atrasando</td><td style="text-align:left">Corte os slides <b>10</b>, <b>13</b> e <b>2</b>, nessa ordem. Nunca corte 4, 9, 11 ou 12.</td></tr>
+    <tr><td style="text-align:left">Alguém travar no meio</td><td style="text-align:left">O próximo assume dizendo "deixa eu complementar". Combinem isso antes.</td></tr>
+  </table>
+</section>
+
+<!-- ===================================================================== -->
+<section id="ensaio">
+  <h2><span class="num">06</span>Como ensaiar</h2>
+
+  <p>Três ensaios bastam, e cada um tem um objetivo diferente.</p>
+
+  <h3>Ensaio 1 — sozinho, cada um a sua parte</h3>
+  <p>Leia as falas deste roteiro em voz alta, com cronômetro. O objetivo é
+     descobrir o que você <b>não</b> entende — quando a frase não sai natural, é
+     porque o conceito não está claro. Aí volte no
+     <a href="../busca-em-ia/">guia de estudo</a> antes de decorar.</p>
+
+  <h3>Ensaio 2 — juntos, com cronômetro</h3>
+  <p>Do início ao fim, sem parar, cronometrando. O objetivo é a <b>passagem de
+     bastão</b> e o tempo total. Se passar de 15 minutos, cortem — não acelerem.</p>
+
+  <h3>Ensaio 3 — na sala, com o projetor</h3>
+  <p>O objetivo é técnico: o projetor, a fonte do terminal, o tema dos slides, o
+     Python rodando naquela máquina. Rodem o <code>--completo</code> inteiro uma
+     vez ali.</p>
+
+  <div class="cuidado">
+    <p><b>Um exercício que vale mais que um ensaio inteiro:</b> cada um pega o
+       <code>busca.py</code> e explica para os outros três o que faz cada bloco.
+       Quem não conseguir explicar alguma parte descobre isso agora, e não quando
+       o professor perguntar.</p>
+  </div>
+</section>
+
+<footer style="border-top:1px solid var(--linha);padding-top:24px;color:var(--texto-2);font-size:14px">
+  <p><a href="../busca-em-ia/" style="color:var(--destaque)">Guia de estudo: entender os conceitos &rarr;</a><br>
+     <a href="../../apresentacoes/ia-sokoban/" style="color:var(--destaque)">Os slides do seminário &rarr;</a></p>
+  <p>Esta página imprime bem: <kbd>Ctrl</kbd>+<kbd>P</kbd>. Cada um pode levar a
+     sua parte no papel.</p>
+</footer>
+
+</div>
+
+<script>
+document.getElementById("botao-tema").addEventListener("click", function () {
+  var raiz = document.documentElement;
+  raiz.dataset.tema = raiz.dataset.tema === "claro" ? "escuro" : "claro";
+  try { localStorage.setItem("tema", raiz.dataset.tema); } catch (e) { /* anônimo */ }
+});
+try {
+  var salvo = localStorage.getItem("tema");
+  if (salvo) document.documentElement.dataset.tema = salvo;
+} catch (e) { /* anônimo */ }
+</script>
+</body>
+</html>
