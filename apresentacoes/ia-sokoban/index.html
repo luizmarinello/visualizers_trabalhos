@@ -175,7 +175,7 @@
     while fronteira:
         _, _, nó = heapq.heappop(fronteira)
 
-        <span class="miudo"># entrada obsoleta: não conta como expandido</span>
+        <span class="miudo"># obsoleta: não conta como expandido</span>
         if alcançados.get(nó.estado) is not nó:
             continue
 
