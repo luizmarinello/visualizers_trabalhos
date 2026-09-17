@@ -14,7 +14,7 @@ assets/
 apresentacoes/
   _modelo/index.html            modelo em branco, para copiar
   ia-sokoban/
-    index.html                  os 14 slides do seminário de IA
+    index.html                  os 15 slides do seminário de IA
     demos.js                    as demos interativas
     dados.js                    gerado pelo Python — não editar a mão
 ```

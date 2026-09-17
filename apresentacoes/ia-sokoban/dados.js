@@ -32,7 +32,7 @@ window.DADOS = {
         "expandidos": 73,
         "gerados": 86,
         "podados": 1,
-        "tempo": 0.0
+        "tempo": 0.001
       },
       "gulosa": {
         "status": "ok",
@@ -61,7 +61,7 @@ window.DADOS = {
         "expandidos": 12606,
         "gerados": 17265,
         "podados": 113,
-        "tempo": 0.058
+        "tempo": 0.054
       },
       "gulosa": {
         "status": "ok",
@@ -90,7 +90,7 @@ window.DADOS = {
         "expandidos": 1532839,
         "gerados": 1620567,
         "podados": 10838,
-        "tempo": 9.681
+        "tempo": 14.641
       },
       "gulosa": {
         "status": "ok",
@@ -99,7 +99,7 @@ window.DADOS = {
         "expandidos": 364,
         "gerados": 595,
         "podados": 0,
-        "tempo": 0.002
+        "tempo": 0.02
       },
       "estrela": {
         "status": "ok",
@@ -108,7 +108,7 @@ window.DADOS = {
         "expandidos": 159631,
         "gerados": 225149,
         "podados": 1059,
-        "tempo": 1.246
+        "tempo": 2.469
       }
     },
     "instancia4": {
@@ -119,7 +119,7 @@ window.DADOS = {
         "expandidos": 2022849,
         "gerados": 3000000,
         "podados": 15855,
-        "tempo": 16.516
+        "tempo": 29.151
       },
       "gulosa": {
         "status": "ok",
@@ -128,7 +128,7 @@ window.DADOS = {
         "expandidos": 3647,
         "gerados": 4153,
         "podados": 50,
-        "tempo": 0.037
+        "tempo": 0.039
       },
       "estrela": {
         "status": "ok",
@@ -137,7 +137,7 @@ window.DADOS = {
         "expandidos": 74120,
         "gerados": 130955,
         "podados": 622,
-        "tempo": 0.636
+        "tempo": 1.208
       }
     },
     "zero": {
@@ -177,7 +177,7 @@ window.DADOS = {
         "expandidos": 12606,
         "gerados": 17265,
         "podados": 113,
-        "tempo": 0.046
+        "tempo": 0.06
       },
       "gulosa": {
         "status": "ok",
@@ -195,7 +195,7 @@ window.DADOS = {
         "expandidos": 2411,
         "gerados": 3637,
         "podados": 19,
-        "tempo": 0.012
+        "tempo": 0.017
       }
     },
     "poda_sem": {
@@ -206,7 +206,7 @@ window.DADOS = {
         "expandidos": 12965,
         "gerados": 17874,
         "podados": 0,
-        "tempo": 0.04
+        "tempo": 0.056
       },
       "gulosa": {
         "status": "ok",
@@ -224,7 +224,7 @@ window.DADOS = {
         "expandidos": 2428,
         "gerados": 3681,
         "podados": 0,
-        "tempo": 0.011
+        "tempo": 0.016
       }
     },
     "custos": {
@@ -235,7 +235,7 @@ window.DADOS = {
         "expandidos": 15617,
         "gerados": 19390,
         "podados": 106,
-        "tempo": 0.048
+        "tempo": 0.073
       },
       "gulosa": {
         "status": "ok",
@@ -253,7 +253,7 @@ window.DADOS = {
         "expandidos": 1401,
         "gerados": 1953,
         "podados": 6,
-        "tempo": 0.007
+        "tempo": 0.012
       }
     }
   },
