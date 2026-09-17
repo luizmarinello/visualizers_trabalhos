@@ -1,0 +1,728 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="escuro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Busca em IA: UCS, Gulosa e A*</title>
+<link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+
+<div class="palco">
+
+<!-- 1 ---------------------------------------------------------------------->
+<section class="slide capa">
+  <h1>Empurrar caixas<br>no labirinto</h1>
+  <p class="sub">UCS, Busca Gulosa e A* &mdash; três algoritmos que são,
+     na verdade, <span class="destaque">uma única função</span>.</p>
+  <p class="miudo" style="margin-top:32px">
+     Inteligência Artificial &middot; Prof. Marcos Augusto Campagnaro Mucelini &middot; FAG<br>
+     [nome 1] &middot; [nome 2] &middot; [nome 3] &middot; [nome 4]</p>
+  <aside>
+    <p>Abrir dizendo o problema em uma frase: <b>Problema 8 do catálogo, o Sokoban</b> —
+       um agente empurra caixas até os alvos, dentro de um labirinto.</p>
+    <p>E dizer logo a tese da apresentação, que é o que o trabalho pedia:
+       <b>não escrevemos três buscas. Escrevemos uma só, e trocamos a função que
+       ordena a fila.</b> Tudo o que vem depois é consequência disso.</p>
+    <p>Lembrete: preencher os nomes e as matrículas antes de apresentar.</p>
+  </aside>
+</section>
+
+<!-- 2 ---------------------------------------------------------------------->
+<section class="slide">
+  <h2>Como dividimos</h2>
+  <div class="colunas">
+    <div class="coluna">
+      <div class="caixa">
+        <h3>[nome 1] &mdash; o problema</h3>
+        <p>As regras do jogo, a modelagem do estado e por que ela é a decisão
+           mais importante do trabalho. Slides 3 e 4.</p>
+      </div>
+      <div class="caixa">
+        <h3>[nome 2] &mdash; o código</h3>
+        <p>A função única de busca, as três funções <code>f</code> e a
+           heurística. Slides 5 e 6.</p>
+      </div>
+    </div>
+    <div class="coluna">
+      <div class="caixa">
+        <h3>[nome 3] &mdash; os experimentos</h3>
+        <p>A corrida das três buscas, as tabelas e a instância onde a UCS
+           desiste. Slides 7 a 9.</p>
+      </div>
+      <div class="caixa">
+        <h3>[nome 4] &mdash; a análise</h3>
+        <p>A poda, as três surpresas e quando usar cada algoritmo fora da
+           sala de aula. Slides 10 a 13.</p>
+      </div>
+    </div>
+  </div>
+  <p class="miudo" style="margin-top:auto">Qualquer um de nós responde sobre
+     qualquer linha do código &mdash; a divisão é de fala, não de conhecimento.</p>
+  <aside>
+    <p>Slide curto, 30 segundos. Serve só para o professor saber quem fala o quê.</p>
+    <p>A última linha é importante dizer em voz alta: o roteiro avisa que
+       qualquer integrante pode ser questionado sobre qualquer linha.</p>
+  </aside>
+</section>
+
+<!-- 3 ---------------------------------------------------------------------->
+<section class="slide" data-arrows="demo">
+  <h2>Duas regras. Só isso.</h2>
+  <div class="colunas estreita-dir">
+    <div class="coluna">
+      <div class="caixa">
+        <h3>1. O agente anda uma célula por vez</h3>
+        <p>Cima, baixo, esquerda ou direita. Nunca atravessa parede.</p>
+      </div>
+      <div class="caixa">
+        <h3>2. Ele empurra, nunca puxa</h3>
+        <p>Se há caixa no destino, ela vai para a célula seguinte
+           <span class="forte">na mesma direção</span> &mdash; e só se essa
+           célula estiver livre de parede e de outra caixa.</p>
+      </div>
+      <p class="miudo">Dessas duas regras sai tudo: é por não poder puxar que
+         existem posições sem volta, e é por isso que o problema é difícil.</p>
+      <div class="controles">
+        <button data-jogo="reiniciar">recomeçar</button>
+        <button data-jogo="desfazer">desfazer</button>
+        <button data-jogo="solucao">ver a solução ótima</button>
+      </div>
+      <div class="controles"><span class="info">use as <kbd>setas</kbd> &mdash;
+        neste slide o <kbd>espaço</kbd> avança a apresentação</span></div>
+    </div>
+    <div class="coluna" style="justify-content:center">
+      <div id="jogo"></div>
+      <div class="placar" id="jogo-painel"></div>
+    </div>
+  </div>
+  <aside>
+    <p><b>Jogar de verdade aqui.</b> Empurrar a caixa para o canto de cima à
+       esquerda, de propósito, e mostrar que não tem como desfazer dentro do
+       jogo — só o botão desfazer salva. É a deixa perfeita para o slide 10.</p>
+    <p>Esta é a instância 1 &mdash; o labirinto que o professor desenhou na ficha
+       do Problema 8, copiado célula por célula. A solução ótima tem
+       <b>11 movimentos</b>.</p>
+    <p>Pergunta provável: "por que não pode puxar?" — porque é a regra clássica
+       do Sokoban, e é ela que torna o problema PSPACE-difícil. Puxar tornaria
+       tudo reversível e muito mais fácil.</p>
+  </aside>
+</section>
+
+<!-- 4 ---------------------------------------------------------------------->
+<section class="slide">
+  <h2>O estado &mdash; o erro que custa horas</h2>
+  <div class="colunas">
+    <div class="coluna">
+      <pre><code>estado = (posição_do_agente,
+          tupla_ordenada_das_caixas)</code></pre>
+      <div class="caixa">
+        <h3 class="erro">1. Não basta o agente</h3>
+        <p>Duas configurações com o agente na mesma célula e as caixas em
+           lugares diferentes são estados <span class="forte">diferentes</span>.
+           Guardar só o agente produz um programa que roda, não dá erro nenhum
+           e responde <span class="erro">"sem solução"</span> para instâncias
+           que têm solução.</p>
+      </div>
+    </div>
+    <div class="coluna">
+      <div class="caixa">
+        <h3 class="alerta">2. Tupla, não lista</h3>
+        <p>O estado é chave de dicionário. Lista não é <i>hashable</i>:
+           <code>unhashable type: 'list'</code>. Esse pelo menos avisa.</p>
+      </div>
+      <div class="caixa">
+        <h3 class="alerta">3. Ordenada</h3>
+        <p>A mesma configuração física tem que gerar sempre a mesma chave,
+           não importa a ordem em que as caixas foram empurradas.
+           Sem ordenar <span class="forte">não há erro nenhum</span> &mdash;
+           a busca só fica mais lenta, reexplorando estados idênticos.</p>
+      </div>
+      <p class="miudo">Paredes e alvos não entram no estado: não mudam durante
+         a busca e ficam guardados no objeto do problema.</p>
+    </div>
+  </div>
+  <aside>
+    <p>Este é o slide mais importante da apresentação. Falar devagar.</p>
+    <p>O ponto que o professor valoriza: os três erros <b>falham de formas
+       diferentes</b>. O 2 dá exceção na hora. O 1 dá resposta errada em
+       silêncio. O 3 não dá nada — só queima tempo. O mais perigoso é o 1.</p>
+    <p>Pergunta provável: "por que paredes e alvos não entram no estado?" —
+       porque são constantes. Colocá-las no estado multiplicaria o tamanho da
+       chave sem distinguir estado nenhum.</p>
+  </aside>
+</section>
+
+<!-- 5 ---------------------------------------------------------------------->
+<section class="slide">
+  <h2>Uma função de busca. Três <code>f</code>.</h2>
+  <div class="colunas">
+    <div class="coluna">
+      <pre><code>def busca(problema, f, limite_tempo, usar_poda):
+    avaliar = f(problema)
+    fronteira = [(avaliar(raiz), próximo(), raiz)]
+    alcançados = {raiz.estado: raiz}
+
+    while fronteira:
+        _, _, nó = heapq.heappop(fronteira)
+
+        <span class="destaque"># objetivo testado NA RETIRADA</span>
+        if problema.objetivo(nó.estado):
+            return solução(nó)
+
+        for ação in problema.ações(nó.estado):
+            ...</code></pre>
+    </div>
+    <div class="coluna">
+      <pre><code>def f_ucs(p):
+    return lambda nó: nó.g
+
+def f_gulosa(p):
+    return lambda nó: p.h(nó.estado)
+
+def f_estrela(p):
+    return lambda nó: nó.g + p.h(nó.estado)</code></pre>
+      <div class="caixa">
+        <h3>Três detalhes que não são enfeite</h3>
+        <ul style="font-size:19px">
+          <li><span class="forte">Objetivo na retirada</span>, não na geração.
+              É o que garante a otimalidade da UCS e do A*.</li>
+          <li><span class="forte">Contador de desempate</span> na fila: sem ele
+              o <code>heapq</code> tentaria comparar dois nós e quebraria.</li>
+          <li><span class="forte">Dicionário de alcançados</span>: guarda o
+              melhor nó por estado. É o que impede a busca de girar em ciclo.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <aside>
+    <p>Mostrar o arquivo <code>busca.py</code> aberto se der. São 3 funções de
+       uma linha e uma função de busca. Mais nada.</p>
+    <p><b>A pergunta que vai vir:</b> "por que testar o objetivo na retirada e
+       não na geração?" — Porque na geração você só sabe que <i>achou</i> um
+       caminho, não que achou o <i>mais barato</i>. Enquanto o nó está na fila,
+       ainda pode aparecer um caminho melhor para o mesmo estado. Testar na
+       geração devolve solução subótima em alguns casos e parece correto em
+       todos os outros.</p>
+    <p>O contador: <code>itertools.count()</code>. Quando dois nós empatam em
+       <code>f</code>, o heapq passa para o segundo item da tupla. Se esse
+       segundo item fosse o próprio nó, daria <code>TypeError</code>.</p>
+  </aside>
+</section>
+
+<!-- 6 ---------------------------------------------------------------------->
+<section class="slide">
+  <h2>A heurística e de onde ela sai</h2>
+  <div class="colunas estreita-esq">
+    <div class="coluna">
+      <div class="caixa">
+        <h3>h(estado)</h3>
+        <p>Para cada caixa, a distância de Manhattan até o alvo mais próximo.
+           Soma tudo.</p>
+      </div>
+      <div class="caixa">
+        <h3>O relaxamento</h3>
+        <p>Apagamos três regras:</p>
+        <ul style="font-size:19px">
+          <li>as paredes</li>
+          <li>as outras caixas</li>
+          <li>o deslocamento do agente<br>
+              <span class="miudo">(ele se teleporta para o lado certo antes de
+              cada empurrão)</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="coluna">
+      <div class="caixa">
+        <h3 class="ok">Admissível</h3>
+        <p>Uma caixa só anda sendo empurrada, e cada empurrão a desloca uma
+           célula. Nenhuma solução real pode custar menos que isso. As três
+           regras apagadas só <span class="forte">removem obstáculos</span> &mdash;
+           nenhuma cria atalho.</p>
+      </div>
+      <div class="caixa">
+        <h3 class="ok">Consistente</h3>
+        <p>Movimento simples não muda <code>h</code> e custa 1. Empurrão muda
+           <code>h</code> em no máximo uma unidade e custa o preço de um
+           empurrão.</p>
+      </div>
+      <div class="caixa">
+        <h3 class="alerta">O que ela não vê</h3>
+        <p>Ignora as paredes. Em labirinto fechado a estimativa fica frouxa e o
+           A* se aproxima da UCS.</p>
+      </div>
+    </div>
+  </div>
+  <aside>
+    <p>O professor vai perguntar <b>por que é admissível</b>. A resposta curta:
+       relaxamento. Toda heurística obtida apagando restrições do problema é
+       admissível, porque o problema relaxado nunca é mais caro que o original.</p>
+    <p>Se perguntarem sobre duas caixas mirando o mesmo alvo: sim, isso
+       subestima. Subestimar é seguro. O que quebraria a admissibilidade é
+       <i>superestimar</i>. A versão forte seria emparelhamento caixa–alvo de
+       custo mínimo — ficou na lista de melhorias.</p>
+  </aside>
+</section>
+
+<!-- 7 ---------------------------------------------------------------------->
+<section class="slide">
+  <h2>A corrida</h2>
+  <p class="miudo" style="margin-top:-8px">Instância 1, um nó por ciclo para os
+     três. A cor marca por onde a caixa já passou. É a ordem real de expansão,
+     gravada pelo Python &mdash; o navegador não recalcula nada.</p>
+  <div class="colunas tres" style="align-items:center">
+    <div class="coluna">
+      <div id="pista-ucs"></div>
+      <div class="placar" id="placar-ucs"></div>
+    </div>
+    <div class="coluna">
+      <div id="pista-gulosa"></div>
+      <div class="placar" id="placar-gulosa"></div>
+    </div>
+    <div class="coluna">
+      <div id="pista-estrela"></div>
+      <div class="placar" id="placar-estrela"></div>
+    </div>
+  </div>
+  <div class="controles" style="justify-content:center">
+    <button data-corrida="correr">correr</button>
+    <button data-corrida="pausar">pausar</button>
+    <button data-corrida="passo">um passo</button>
+    <button data-corrida="reiniciar">reiniciar</button>
+  </div>
+  <aside>
+    <p>Deixar correr uma vez inteira antes de falar. O padrão fala sozinho:
+       a UCS pinta o mapa todo, a Gulosa vai reto, o A* fica no meio.</p>
+    <p>Depois, com o "um passo", mostrar as primeiras expansões da UCS: ela
+       visita <b>tudo que custa 1</b>, depois tudo que custa 2. Não tem noção
+       de onde fica o alvo.</p>
+    <p>Números desta instância: UCS 73 nós, A* 38, Gulosa 20 &mdash; e os três
+       acharam a <b>mesma</b> solução, de custo 11. Guardar esse "acharam a
+       mesma solução" para o slide 8, porque na instância 3 isso muda.</p>
+  </aside>
+</section>
+
+<!-- 8 ---------------------------------------------------------------------->
+<section class="slide">
+  <h2>Os números</h2>
+  <div class="colunas">
+    <div class="coluna">
+      <h3>Instância 1 &mdash; 1 caixa</h3>
+      <table>
+        <tr><th>Algoritmo</th><th>Custo</th><th>Expandidos</th><th>Tempo (s)</th></tr>
+        <tr><td>UCS</td><td class="num" data-num="instancia1.ucs.custo"></td>
+            <td class="num" data-num="instancia1.ucs.expandidos"></td>
+            <td class="num" data-num="instancia1.ucs.tempo"></td></tr>
+        <tr><td>Gulosa</td><td class="num" data-num="instancia1.gulosa.custo"></td>
+            <td class="num" data-num="instancia1.gulosa.expandidos"></td>
+            <td class="num" data-num="instancia1.gulosa.tempo"></td></tr>
+        <tr><td>A*</td><td class="num" data-num="instancia1.estrela.custo"></td>
+            <td class="num" data-num="instancia1.estrela.expandidos"></td>
+            <td class="num" data-num="instancia1.estrela.tempo"></td></tr>
+      </table>
+
+      <h3 style="margin-top:22px">Instância 2 &mdash; 2 caixas</h3>
+      <table>
+        <tr><th>Algoritmo</th><th>Custo</th><th>Expandidos</th><th>Tempo (s)</th></tr>
+        <tr><td>UCS</td><td class="num" data-num="instancia2.ucs.custo"></td>
+            <td class="num" data-num="instancia2.ucs.expandidos"></td>
+            <td class="num" data-num="instancia2.ucs.tempo"></td></tr>
+        <tr><td>Gulosa</td><td class="num" data-num="instancia2.gulosa.custo"></td>
+            <td class="num" data-num="instancia2.gulosa.expandidos"></td>
+            <td class="num" data-num="instancia2.gulosa.tempo"></td></tr>
+        <tr><td>A*</td><td class="num" data-num="instancia2.estrela.custo"></td>
+            <td class="num" data-num="instancia2.estrela.expandidos"></td>
+            <td class="num" data-num="instancia2.estrela.tempo"></td></tr>
+      </table>
+    </div>
+    <div class="coluna">
+      <h3>Instância 3 &mdash; 3 caixas</h3>
+      <table>
+        <tr><th>Algoritmo</th><th>Custo</th><th>Expandidos</th><th>Tempo (s)</th></tr>
+        <tr><td>UCS</td><td class="num" data-num="instancia3.ucs.custo"></td>
+            <td class="num" data-num="instancia3.ucs.expandidos"></td>
+            <td class="num" data-num="instancia3.ucs.tempo"></td></tr>
+        <tr class="realce"><td>Gulosa</td>
+            <td class="num erro" data-num="instancia3.gulosa.custo"></td>
+            <td class="num" data-num="instancia3.gulosa.expandidos"></td>
+            <td class="num" data-num="instancia3.gulosa.tempo"></td></tr>
+        <tr><td>A*</td><td class="num" data-num="instancia3.estrela.custo"></td>
+            <td class="num" data-num="instancia3.estrela.expandidos"></td>
+            <td class="num" data-num="instancia3.estrela.tempo"></td></tr>
+      </table>
+      <div class="caixa" style="margin-top:22px">
+        <h3>É aqui que a Gulosa erra</h3>
+        <p>Ela devolve uma solução de custo
+           <span class="erro forte" data-num="instancia3.gulosa.custo"></span>
+           onde o ótimo é
+           <span class="ok forte" data-num="instancia3.estrela.custo"></span>.
+           <span class="miudo">43% pior.</span></p>
+        <p>Em troca, expandiu
+           <span class="forte" data-num="instancia3.gulosa.expandidos"></span>
+           nós contra
+           <span class="forte" data-num="instancia3.ucs.expandidos"></span>
+           da UCS.</p>
+      </div>
+    </div>
+  </div>
+  <aside>
+    <p>Não ler a tabela em voz alta. Apontar três coisas e seguir:</p>
+    <ul>
+      <li>nas instâncias 1 e 2, os três acham o <b>mesmo custo</b>;</li>
+      <li>o A* sempre expande menos que a UCS e acha o mesmo custo;</li>
+      <li>na instância 3 a Gulosa <b>quebra</b>: 40 contra 28.</li>
+    </ul>
+    <p>Se perguntarem por que a Gulosa acertou nas duas primeiras: sorte de
+       geometria. Nos mapas simétricos o alvo mais próximo é mesmo o certo.
+       Na instância 3 os alvos estão amontoados num canto, as caixas disputam
+       o mesmo alvo, e a última faz a volta inteira.</p>
+    <p>Detalhe bom para citar se sobrar tempo: na instância 2 o A* achou um
+       caminho <b>diferente</b> do da UCS, com exatamente o mesmo custo 16.
+       Ótimo não quer dizer único — quer dizer que não existe mais barato.
+       Está impresso no <code>resultados.txt</code>, dá para mostrar.</p>
+    <p>Os tempos são desta máquina. Os nós expandidos são determinísticos e
+       se repetem em qualquer execução, em qualquer computador.</p>
+  </aside>
+</section>
+
+<!-- 9 ---------------------------------------------------------------------->
+<section class="slide">
+  <h2>Instância 4: a UCS desiste</h2>
+  <div class="colunas estreita-dir">
+    <div class="coluna">
+      <table>
+        <tr><th>Algoritmo</th><th>Custo</th><th>Expandidos</th><th>Gerados</th><th>Tempo (s)</th></tr>
+        <tr class="realce"><td>UCS</td>
+            <td class="num erro" data-status="instancia4.ucs.status"></td>
+            <td class="num" data-num="instancia4.ucs.expandidos"></td>
+            <td class="num" data-num="instancia4.ucs.gerados"></td>
+            <td class="num erro">&mdash;</td></tr>
+        <tr><td>Gulosa</td><td class="num alerta" data-num="instancia4.gulosa.custo"></td>
+            <td class="num" data-num="instancia4.gulosa.expandidos"></td>
+            <td class="num" data-num="instancia4.gulosa.gerados"></td>
+            <td class="num" data-num="instancia4.gulosa.tempo"></td></tr>
+        <tr><td>A*</td><td class="num ok" data-num="instancia4.estrela.custo"></td>
+            <td class="num" data-num="instancia4.estrela.expandidos"></td>
+            <td class="num" data-num="instancia4.estrela.gerados"></td>
+            <td class="num" data-num="instancia4.estrela.tempo"></td></tr>
+      </table>
+      <div class="caixa" style="margin-top:20px">
+        <h3>O que aconteceu</h3>
+        <p>A UCS gerou <span class="forte">3 milhões</span> de nós, bateu no
+           teto de memória e foi interrompida <span class="forte">sem nunca ter
+           achado a solução</span>.</p>
+        <p>O A* resolveu o mesmo problema expandindo
+           <span class="ok forte" data-num="instancia4.estrela.expandidos"></span>
+           nós, em menos de um segundo.</p>
+        <p class="miudo">E a Gulosa respondeu em
+           <span data-num="instancia4.gulosa.tempo"></span> s, com uma solução
+           31% pior que a ótima.</p>
+      </div>
+    </div>
+    <div class="coluna">
+      <div class="caixa">
+        <h3>Por que o teto é de nós, e não de tempo</h3>
+        <p>A fronteira e o dicionário de alcançados crescem juntos. Por volta de
+           3 milhões de nós gerados o processo já passa de 1 GB.</p>
+        <p>Depois disso o sistema começa a paginar em disco &mdash; e a medição
+           deixa de medir o algoritmo e passa a medir o disco.</p>
+        <p class="miudo">O limite de tempo depende da máquina. O de nós não:
+           dá o mesmo resultado em qualquer computador.</p>
+      </div>
+    </div>
+  </div>
+  <aside>
+    <p>Este é o slide que o roteiro do trabalho chama de melhor resultado
+       possível: <b>um algoritmo não termina e o outro resolve em menos de um
+       segundo</b>. Deixar o silêncio depois de falar.</p>
+    <p>Ser honesto se perguntarem: a UCS <b>terminaria</b> se tivesse memória
+       infinita — ela é completa e ótima. O que ela não tem é memória. Com o
+       teto de nós elevado (<code>--nos 10000000</code>) e RAM sobrando, ela
+       conclui essa instância em cerca de 1 minuto, gerando 7,5 milhões de nós.
+       Numa máquina de 8 GB, não dá.</p>
+    <p>Esse é exatamente o ponto: a garantia teórica de completude não paga a
+       conta de RAM.</p>
+  </aside>
+</section>
+
+<!-- 10 --------------------------------------------------------------------->
+<section class="slide">
+  <h2>Becos sem saída &mdash; e o quanto podar ajudou</h2>
+  <div class="colunas estreita-esq">
+    <div class="coluna">
+      <div id="mapa-becos"></div>
+      <p class="miudo" style="text-align:center;margin-top:10px">
+         em vermelho, as células de onde uma caixa nunca mais sai</p>
+    </div>
+    <div class="coluna">
+      <div class="caixa">
+        <h3>A regra</h3>
+        <p>Célula livre, que não é alvo, com parede acima ou abaixo
+           <span class="forte">e</span> parede à esquerda ou à direita.
+           Os dois eixos travados de uma vez: a caixa fica lá para sempre.</p>
+        <p class="miudo">Calculado uma vez, no início, porque depende só das
+           paredes e dos alvos &mdash; que não mudam.</p>
+      </div>
+      <div class="caixa">
+        <h3 class="alerta">O resultado honesto</h3>
+        <p>Na instância 2, a poda economizou
+           <span class="forte">2,8%</span> dos nós da UCS e
+           <span class="forte">0,7%</span> dos do A*.</p>
+        <p>Pouco. E o motivo é simples: nossas instâncias são
+           <span class="forte">salas abertas</span>, com só 4 cantos
+           disponíveis. Em labirinto estreito o ganho seria bem maior.</p>
+      </div>
+    </div>
+  </div>
+  <aside>
+    <p>Se alguém empurrou a caixa para o canto no slide 3, retomar aqui:
+       "foi exatamente isso que aconteceu".</p>
+    <p><b>Não vender a poda.</b> O roteiro diz que resultado modesto bem
+       explicado vale mais que resultado bonito sem análise. O número é 2,8% e
+       a explicação é a geometria dos mapas.</p>
+    <p>Se perguntarem "e se o mapa fosse um labirinto de verdade?" — aí a poda
+       ganharia muito mais, porque haveria muito mais canto. Foi uma escolha
+       nossa usar sala aberta, para que o crescimento do espaço de estados
+       ficasse claro sem interferência do desenho do mapa.</p>
+    <p>Limitação a admitir se perguntarem: nossa poda detecta só o canto
+       simples. Não detecta caixa encostada numa parede contínua sem nenhum
+       alvo ao longo dela, nem duas caixas que se travam uma na outra. Ficou na
+       lista de trabalhos futuros.</p>
+  </aside>
+</section>
+
+<!-- 11 --------------------------------------------------------------------->
+<section class="slide">
+  <h2>Três coisas que não esperávamos</h2>
+  <div class="colunas tres">
+    <div class="coluna">
+      <div class="caixa" style="flex:1">
+        <h3 class="destaque">1. Com h = 0, os três viram o mesmo algoritmo</h3>
+        <p>Rodamos a instância 1 com <code>h(n) = 0</code>. Os três expandiram
+           <span class="forte" data-num="zero.ucs.expandidos"></span> nós.
+           Idênticos.</p>
+        <p class="miudo">O A* vira UCS (f = g + 0). A Gulosa vira busca em
+           largura (f = 0 para todos, a fila passa a ser ordenada só pelo
+           contador de inserção). E a UCS já era busca em largura, porque os
+           custos são uniformes.</p>
+        <p>É a prova de que a função de busca é mesmo <span class="forte">uma
+           só</span>.</p>
+      </div>
+    </div>
+    <div class="coluna">
+      <div class="caixa" style="flex:1">
+        <h3 class="destaque">2. Custo e passos não são a mesma coisa</h3>
+        <p>Com andar = 1 e empurrar = 2, a mesma instância 2 passa a ter
+           <span class="forte" data-num="custos.estrela.passos"></span> ações
+           custando <span class="forte" data-num="custos.estrela.custo"></span>.</p>
+        <p class="miudo">E a UCS <span class="erro">piorou</span>:
+           <span data-num="poda_com.ucs.expandidos"></span> &rarr;
+           <span data-num="custos.ucs.expandidos"></span> nós. Deixou de se
+           comportar como busca em largura e passou a varrer por faixas de
+           custo.</p>
+      </div>
+    </div>
+    <div class="coluna">
+      <div class="caixa" style="flex:1">
+        <h3 class="destaque">3. E o A* melhorou no mesmo teste</h3>
+        <p><span data-num="poda_com.estrela.expandidos"></span> &rarr;
+           <span class="ok forte" data-num="custos.estrela.expandidos"></span>
+           nós. Quase <span class="forte">metade</span>.</p>
+        <p class="miudo">Porque a heurística também passou a valer 2 por
+           célula. Dentro de <code>f = g + h</code> ela ficou
+           proporcionalmente mais informativa: pesa mais na decisão e separa
+           melhor os nós bons dos ruins.</p>
+        <p>Mesmo problema, mesma heurística. Só mudou o preço de empurrar.</p>
+      </div>
+    </div>
+  </div>
+  <aside>
+    <p>Este é o slide que o roteiro premia. Três resultados que não estavam no
+       plano e que só apareceram porque rodamos os controles.</p>
+    <p>O nº 1 é o que responde à pergunta "como sei que vocês não escreveram
+       três buscas?". Se fossem três implementações separadas, não teriam saído
+       exatamente os mesmos 73 nós.</p>
+    <p>O nº 3 é contraintuitivo e vale a pena deixar decantar: encarecer o
+       empurrão <b>ajudou</b> o A*. Se perguntarem por quê: h passou a ter a
+       mesma escala de g. Antes h era pequena demais perto de g e o A* pendia
+       para o comportamento da UCS.</p>
+  </aside>
+</section>
+
+<!-- 12 --------------------------------------------------------------------->
+<section class="slide">
+  <h2>Qual usar, fora da sala de aula</h2>
+  <div class="colunas tres">
+    <div class="coluna">
+      <div class="caixa" style="flex:1">
+        <h3>UCS</h3>
+        <p><span class="ok">Ótima e completa</span>, sem precisar de heurística
+           nenhuma.</p>
+        <p class="miudo">Use quando não existe estimativa confiável do que
+           falta, o espaço de estados é pequeno, e errar não é opção.</p>
+        <p>Roteamento em grafo pequeno. Menor caminho num mapa já carregado
+           na memória.</p>
+      </div>
+    </div>
+    <div class="coluna">
+      <div class="caixa" style="flex:1">
+        <h3>Gulosa</h3>
+        <p><span class="erro">Não é ótima</span>, mas é ordens de grandeza mais
+           rápida.</p>
+        <p class="miudo">Use quando uma resposta boa agora vale mais que a
+           melhor resposta daqui a uma hora.</p>
+        <p>Roteirização de entregas em tempo real, sugestão enquanto o usuário
+           digita, primeira solução para depois melhorar.</p>
+      </div>
+    </div>
+    <div class="coluna">
+      <div class="caixa" style="flex:1">
+        <h3 class="destaque">A*</h3>
+        <p><span class="ok">Ótima</span> se a heurística for admissível, e
+           muito mais barata que a UCS.</p>
+        <p class="miudo">É o padrão. Use sempre que houver uma estimativa
+           decente do que falta.</p>
+        <p>GPS, movimentação em jogos, planejamento de rota de robô.</p>
+      </div>
+    </div>
+  </div>
+  <div class="caixa" style="margin-top:18px">
+    <p style="margin:0"><span class="forte">A regra prática:</span> o A* nunca
+       é pior que a UCS quando a heurística é admissível &mdash; no pior caso
+       ela é inútil (h = 0) e ele vira UCS. Por isso a pergunta de projeto
+       quase nunca é "qual algoritmo", e sim
+       <span class="destaque">"que heurística eu consigo escrever?"</span></p>
+  </div>
+  <aside>
+    <p>Fechar com a frase da caixa de baixo. É a conclusão do trabalho inteiro
+       em uma linha.</p>
+    <p>Se perguntarem sobre a Gulosa na vida real: ela raramente aparece
+       sozinha. Aparece como primeira passada de um algoritmo que depois
+       melhora a solução, ou quando o custo de calcular o ótimo é maior que o
+       prejuízo de errar.</p>
+  </aside>
+</section>
+
+<!-- 13 --------------------------------------------------------------------->
+<section class="slide">
+  <h2>Demonstração ao vivo</h2>
+  <div class="colunas">
+    <div class="coluna">
+      <pre><code>python main.py --demo
+    <span class="miudo"># a solução ótima da instância 1,
+    # passo a passo, no terminal</span>
+
+python main.py
+    <span class="miudo"># instâncias 1 a 3, cerca de 12 s</span>
+
+python main.py --completo
+    <span class="miudo"># inclui a instância 4, onde a UCS desiste</span></code></pre>
+      <p class="miudo">Python 3 puro. Nenhuma biblioteca externa &mdash;
+         só <code>heapq</code>, <code>itertools</code> e <code>time</code>,
+         que são da biblioteca padrão.</p>
+    </div>
+    <div class="coluna">
+      <div class="caixa">
+        <h3>A ordem da demonstração</h3>
+        <ol style="font-size:20px">
+          <li>Abrir <code>busca.py</code> e mostrar que a função de busca é uma
+              só, e as três <code>f</code> têm uma linha cada.</li>
+          <li>Rodar <code>--demo</code> e acompanhar a caixa andando até o
+              alvo.</li>
+          <li>Rodar <code>--completo</code> e deixar a instância 4 estourando o
+              limite na tela enquanto explicamos.</li>
+          <li>Mostrar <code>resultados.txt</code>: é de lá que saiu cada número
+              destes slides.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+  <aside>
+    <p>Ter o terminal já aberto na pasta certa <b>antes</b> de começar a
+       apresentação. Testar o <code>--completo</code> na máquina da
+       apresentação no dia anterior.</p>
+    <p>O <code>--completo</code> leva cerca de 30 segundos no total. As
+       instâncias 3 e 4 são a parte demorada. Usar esse tempo para falar, não
+       para esperar calado.</p>
+    <p>Se a máquina for apertada de memória, o limite padrão de 3 milhões de
+       nós já protege — mas dá para baixar com <code>--nos 1500000</code>.</p>
+  </aside>
+</section>
+
+<!-- 14 --------------------------------------------------------------------->
+<section class="slide capa">
+  <h1>Uma função.<br>Três <code style="font-size:0.8em">f</code>.<br>
+      Resultados muito diferentes.</h1>
+  <p class="sub" style="margin-top:24px">
+     A UCS é ótima e não chega ao fim.<br>
+     A Gulosa chega em milissegundos e erra por 43%.<br>
+     O A* faz as duas coisas &mdash; porque tem uma estimativa do que falta.</p>
+  <p class="miudo" style="margin-top:36px">Obrigado. Perguntas?</p>
+  <aside>
+    <p>Três frases e parar. Não resumir a apresentação inteira de novo.</p>
+    <p>Perguntas que podem vir no fim:</p>
+    <ul>
+      <li><b>"E se a heurística não fosse admissível?"</b> O A* deixaria de ser
+          ótimo, mas continuaria achando solução — e mais rápido. É o que se
+          faz quando velocidade importa mais que o ótimo (A* ponderado).</li>
+      <li><b>"Dá para melhorar a heurística?"</b> Sim, de duas formas:
+          distância real dentro do labirinto, pré-calculada por busca em
+          largura a partir de cada alvo; e emparelhamento caixa–alvo de custo
+          mínimo em vez de "alvo mais próximo". As duas continuam admissíveis.</li>
+      <li><b>"Por que não usaram uma biblioteca?"</b> O trabalho proíbe, e o
+          ponto do trabalho é justamente o que se aprende escrevendo a fila de
+          prioridade e o teste de objetivo na mão.</li>
+    </ul>
+  </aside>
+</section>
+
+</div>
+
+<script src="dados.js"></script>
+<script src="demos.js"></script>
+<script src="../../assets/deck.js"></script>
+<script>
+(function () {
+  var D = window.DADOS;
+  var demos = window.SokobanDemos;
+
+  demos.preencherNumeros();
+
+  // Slide 3: o labirinto da instância 1, jogável.
+  demos.tabuleiroJogavel({
+    slide: ".slide[data-arrows='demo']",
+    tabuleiro: "#jogo",
+    painel: "#jogo-painel",
+    mapa: D.mapa,
+    solucao: D.solucao,
+    otimo: D.resultados.instancia1.estrela.custo,
+    cel: 58
+  });
+
+  // Slide 7: as três buscas correndo lado a lado, na ordem real de expansão.
+  demos.corridaDasBuscas({
+    slide: ".slide:nth-of-type(7)",
+    mapa: D.mapa,
+    cel: 40,
+    ritmo: 110,
+    pistas: [
+      { rotulo: "UCS", trilha: D.trilhas.ucs,
+        tabuleiro: "#pista-ucs", placar: "#placar-ucs" },
+      { rotulo: "Gulosa", trilha: D.trilhas.gulosa,
+        tabuleiro: "#pista-gulosa", placar: "#placar-gulosa" },
+      { rotulo: "A*", trilha: D.trilhas.estrela,
+        tabuleiro: "#pista-estrela", placar: "#placar-estrela" }
+    ]
+  });
+
+  // Slide 10: o mesmo mapa, com os becos sem saída pintados.
+  demos.desenharTabuleiro(
+    document.querySelector("#mapa-becos"),
+    demos.lerMapa(D.mapa),
+    { agente: null, caixas: [] },
+    { mortos: true, cel: 52 }
+  );
+})();
+</script>
+</body>
+</html>

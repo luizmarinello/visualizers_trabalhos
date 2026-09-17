@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="escuro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Título da apresentação</title>
+<link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+
+<div class="palco">
+
+  <!-- Cada <section class="slide"> é um slide. Tamanho fixo de 1280x720.
+       Um <aside> no fim vira nota do apresentador (tecla n).
+       Um slide com data-arrows="demo" devolve as setas para a demo de dentro
+       dele; nele a navegação é feita pelo espaço. -->
+
+  <section class="slide capa">
+    <h1>Título</h1>
+    <p class="sub">Subtítulo · Disciplina · Data</p>
+    <aside><p>O que dizer na abertura.</p></aside>
+  </section>
+
+  <section class="slide">
+    <h2>Um slide comum</h2>
+    <ul>
+      <li>Um ponto.</li>
+      <li>Outro ponto.</li>
+    </ul>
+    <aside><p>Nota do apresentador.</p></aside>
+  </section>
+
+  <section class="slide">
+    <h2>Duas colunas</h2>
+    <div class="colunas">
+      <div class="coluna">
+        <div class="caixa"><h3>Esquerda</h3><p>Texto.</p></div>
+      </div>
+      <div class="coluna">
+        <div class="caixa"><h3>Direita</h3><p>Texto.</p></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script src="../../assets/deck.js"></script>
+</body>
+</html>

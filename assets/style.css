@@ -1,0 +1,316 @@
+/* --------------------------------------------------------------------------
+   style.css - tema de TODAS as apresentações deste repositório.
+   Mexer aqui muda o visual de todas elas de uma vez.
+   -------------------------------------------------------------------------- */
+
+:root {
+  --fundo: #11131a;
+  --fundo-2: #191c26;
+  --linha: #2b3040;
+  --texto: #e9ecf4;
+  --texto-2: #99a1b8;
+  --destaque: #6ea8ff;
+  --ok: #58d39a;
+  --alerta: #ffc861;
+  --erro: #ff7b82;
+  --mono: ui-monospace, "Cascadia Code", "Consolas", "SF Mono", monospace;
+  --fonte: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+:root[data-tema="claro"] {
+  --fundo: #f7f8fb;
+  --fundo-2: #ffffff;
+  --linha: #d8dde9;
+  --texto: #171a22;
+  --texto-2: #5b6478;
+  --destaque: #2563eb;
+  --ok: #128a5a;
+  --alerta: #a56a00;
+  --erro: #c0392f;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: var(--fonte);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- página inicial (lista de apresentações) ----------------------------- */
+
+.capa-site {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 80px 24px 120px;
+}
+
+.capa-site h1 {
+  font-size: 42px;
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+}
+
+.capa-site p.sub {
+  color: var(--texto-2);
+  font-size: 18px;
+  margin: 0 0 48px;
+}
+
+.cartoes {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.cartao {
+  display: block;
+  background: var(--fundo-2);
+  border: 1px solid var(--linha);
+  border-radius: 12px;
+  padding: 22px;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color .15s, transform .15s;
+}
+
+.cartao:hover { border-color: var(--destaque); transform: translateY(-2px); }
+.cartao h2 { margin: 0 0 6px; font-size: 20px; }
+.cartao p { margin: 0; color: var(--texto-2); font-size: 15px; line-height: 1.5; }
+.cartao .etiqueta {
+  display: inline-block;
+  margin-top: 14px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--destaque);
+  border: 1px solid var(--linha);
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+
+/* --- o palco dos slides --------------------------------------------------- */
+
+.palco {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+
+/* Todo slide tem exatamente 1280x720. O deck.js aplica um transform de escala
+   para caber na tela, então o que se vê no monitor é o que aparece no projetor. */
+.slide {
+  position: absolute;
+  width: 1280px;
+  height: 720px;
+  padding: 64px 72px;
+  background: var(--fundo);
+  display: none;
+  flex-direction: column;
+  transform-origin: center center;
+}
+
+.slide.ativo { display: flex; }
+
+.slide h1 { font-size: 58px; margin: 0 0 12px; letter-spacing: -0.03em; line-height: 1.05; }
+.slide h2 { font-size: 38px; margin: 0 0 20px; letter-spacing: -0.02em; line-height: 1.1; }
+.slide h3 { font-size: 24px; margin: 0 0 10px; color: var(--texto-2); font-weight: 600; }
+.slide p  { font-size: 22px; line-height: 1.5; margin: 0 0 14px; }
+.slide ul, .slide ol { font-size: 22px; line-height: 1.55; margin: 0 0 14px; padding-left: 26px; }
+.slide li { margin-bottom: 8px; }
+.slide .miudo { font-size: 17px; color: var(--texto-2); }
+
+.slide code, .slide kbd {
+  font-family: var(--mono);
+  font-size: 0.92em;
+  background: var(--fundo-2);
+  border: 1px solid var(--linha);
+  border-radius: 5px;
+  padding: 1px 6px;
+}
+
+.slide pre {
+  font-family: var(--mono);
+  font-size: 17px;
+  line-height: 1.5;
+  background: var(--fundo-2);
+  border: 1px solid var(--linha);
+  border-radius: 10px;
+  padding: 18px 20px;
+  margin: 0 0 14px;
+  overflow: auto;
+}
+.slide pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+
+.destaque { color: var(--destaque); }
+.ok { color: var(--ok); }
+.alerta { color: var(--alerta); }
+.erro { color: var(--erro); }
+.forte { font-weight: 700; }
+
+/* capa */
+.slide.capa { justify-content: center; }
+.slide.capa h1 { font-size: 72px; }
+.slide.capa .sub { font-size: 26px; color: var(--texto-2); }
+
+/* colunas */
+.colunas { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; flex: 1; min-height: 0; }
+.colunas.tres { grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+.colunas.estreita-esq { grid-template-columns: 420px 1fr; }
+.colunas.estreita-dir { grid-template-columns: 1fr 420px; }
+.coluna { min-width: 0; display: flex; flex-direction: column; }
+
+.caixa {
+  background: var(--fundo-2);
+  border: 1px solid var(--linha);
+  border-radius: 12px;
+  padding: 20px 22px;
+}
+.caixa + .caixa { margin-top: 14px; }
+.caixa h3 { margin-top: 0; }
+
+/* tabelas */
+.slide table { width: 100%; border-collapse: collapse; font-size: 19px; }
+.slide th, .slide td { padding: 9px 12px; text-align: right; border-bottom: 1px solid var(--linha); }
+.slide th:first-child, .slide td:first-child { text-align: left; }
+.slide th { color: var(--texto-2); font-weight: 600; font-size: 15px; text-transform: uppercase; letter-spacing: .06em; }
+.slide td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.slide tr.realce td { background: color-mix(in srgb, var(--destaque) 12%, transparent); }
+
+/* --- tabuleiros do Sokoban ------------------------------------------------ */
+
+.tabuleiro {
+  display: grid;
+  gap: 2px;
+  justify-content: center;
+  align-content: center;
+  user-select: none;
+  padding: 10px;
+  /* O fundo do tabuleiro é a cor da parede. */
+  background: var(--fundo);
+  border: 1px solid var(--linha);
+  border-radius: 10px;
+}
+.cel {
+  width: var(--cel, 38px);
+  height: var(--cel, 38px);
+  border-radius: 4px;
+  /* Chão livre: bem mais claro que a parede, senão o labirinto some de longe
+     e o projetor da sala ainda achata o contraste. */
+  background: color-mix(in srgb, var(--texto) 26%, var(--fundo-2));
+  position: relative;
+}
+/* Parede é a cor do próprio fundo do tabuleiro: as paredes viram "buracos"
+   no desenho e a forma do labirinto fica legível de longe. */
+.cel.parede { background: transparent; }
+.cel.alvo { box-shadow: inset 0 0 0 3px var(--alerta); }
+
+/* Caixa e agente são posicionados em absoluto, e não como itens de grid:
+   dentro de um grid sem colunas explícitas, uma largura em porcentagem não
+   tem contra o que resolver e o desenho sai minúsculo. */
+.cel.caixa::after,
+.cel.agente::before {
+  content: "";
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+}
+.cel.caixa::after {
+  width: 70%; height: 70%;
+  border-radius: 5px;
+  background: var(--alerta);
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, .28);
+}
+.cel.caixa.sobre-alvo::after { background: var(--ok); }
+.cel.agente::before {
+  width: 54%; height: 54%;
+  border-radius: 50%;
+  background: var(--destaque);
+}
+.cel.morto { background: color-mix(in srgb, var(--erro) 55%, var(--fundo-2)); }
+.cel.marcado { outline: 2px solid var(--destaque); outline-offset: -2px; }
+
+/* --- barra de navegação e notas ------------------------------------------ */
+
+.barra {
+  position: fixed;
+  bottom: 10px;
+  right: 14px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--texto-2);
+  z-index: 20;
+}
+.barra button {
+  font: inherit;
+  color: inherit;
+  background: var(--fundo-2);
+  border: 1px solid var(--linha);
+  border-radius: 6px;
+  padding: 4px 9px;
+  cursor: pointer;
+}
+.barra button:hover { border-color: var(--destaque); color: var(--texto); }
+
+.progresso {
+  position: fixed;
+  top: 0; left: 0;
+  height: 3px;
+  background: var(--destaque);
+  z-index: 20;
+  transition: width .2s;
+}
+
+/* Notas do apresentador. ATENÇÃO: não são privadas — qualquer pessoa com o
+   link consegue abrir com a tecla n. */
+.notas {
+  position: fixed;
+  inset: auto 0 0 0;
+  max-height: 42vh;
+  overflow: auto;
+  background: var(--fundo-2);
+  border-top: 2px solid var(--destaque);
+  padding: 20px 28px 28px;
+  font-size: 16px;
+  line-height: 1.6;
+  z-index: 30;
+  display: none;
+}
+.notas.aberta { display: block; }
+.notas h4 { margin: 0 0 8px; font-family: var(--mono); font-size: 12px; color: var(--destaque); text-transform: uppercase; letter-spacing: .1em; }
+.notas p { margin: 0 0 10px; }
+.notas ul { margin: 0 0 10px; padding-left: 20px; }
+
+.slide aside { display: none; }
+
+/* --- controles das demos -------------------------------------------------- */
+
+.controles { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 14px; }
+.controles button {
+  font: inherit;
+  font-size: 16px;
+  color: var(--texto);
+  background: var(--fundo-2);
+  border: 1px solid var(--linha);
+  border-radius: 8px;
+  padding: 7px 14px;
+  cursor: pointer;
+}
+.controles button:hover { border-color: var(--destaque); }
+.controles button:disabled { opacity: .45; cursor: default; }
+.controles .info { font-family: var(--mono); font-size: 15px; color: var(--texto-2); }
+
+.placar { display: flex; gap: 10px; font-family: var(--mono); font-size: 15px; justify-content: center; margin-top: 8px; }
+.placar span { color: var(--texto-2); }
+.placar b { color: var(--texto); font-weight: 600; }
