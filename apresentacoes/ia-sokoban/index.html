@@ -175,10 +175,15 @@
     while fronteira:
         _, _, nó = heapq.heappop(fronteira)
 
+        <span class="miudo"># entrada obsoleta: não conta como expandido</span>
+        if alcançados.get(nó.estado) is not nó:
+            continue
+
         <span class="destaque"># objetivo testado NA RETIRADA</span>
         if problema.objetivo(nó.estado):
             return solução(nó)
 
+        expandidos += 1
         for ação in problema.ações(nó.estado):
             ...</code></pre>
     </div>
@@ -545,6 +550,8 @@ def f_estrela(p):
         <h3 class="ok">O que mudou</h3>
         <p><span class="forte">Rodar o A* antes de adotar qualquer
            instância</span> virou parte do processo.</p>
+        <p class="miudo">Foi o que mais nos custou no trabalho &mdash; e o
+           código nunca esteve errado.</p>
       </div>
     </div>
   </div>
