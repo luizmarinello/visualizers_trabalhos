@@ -1,0 +1,221 @@
+/* --------------------------------------------------------------------------
+   qs.css - componentes das demos do trabalho de Quick Sort com pthreads.
+   Usado pela apresentação (apresentacoes/quicksort-pthreads) e pelo guia
+   (guias/quicksort-pthreads). As cores base vêm do assets/style.css.
+   -------------------------------------------------------------------------- */
+
+/* Uma cor por thread. Ordem fixa: a thread 1 é sempre azul, a 2 laranja... */
+:root {
+  --t0: #3987e5; --t1: #e07a45; --t2: #2bb585; --t3: #d9a21b;
+  --t4: #d96a96; --t5: #4fa64f; --t6: #9085e9; --t7: #e66767;
+  --esq: #3987e5; --dir: #e07a45;
+}
+:root[data-tema="claro"] {
+  --t0: #2a78d6; --t1: #d0581f; --t2: #148a5f; --t3: #a87400;
+  --t4: #c2457a; --t5: #2e7d2e; --t6: #4a3aa7; --t7: #c63a39;
+  --esq: #2a78d6; --dir: #d0581f;
+}
+
+/* --- vetor de células (partição) ----------------------------------------- */
+
+.vetor { display: flex; gap: 6px; justify-content: center; flex-wrap: nowrap; }
+.vetor .c {
+  position: relative;
+  width: var(--cel, 56px);
+  height: var(--cel, 56px);
+  display: grid; place-items: center;
+  font-family: var(--mono);
+  font-size: calc(var(--cel, 56px) * .42);
+  font-weight: 600;
+  background: var(--fundo-2);
+  border: 2px solid var(--linha);
+  border-radius: 8px;
+  transition: background .25s, border-color .25s, transform .25s;
+}
+.vetor .c.pivo { border-color: var(--alerta); box-shadow: inset 0 0 0 2px var(--alerta); }
+.vetor .c.esq { background: color-mix(in srgb, var(--esq) 30%, var(--fundo-2)); border-color: var(--esq); }
+.vetor .c.dir { background: color-mix(in srgb, var(--dir) 30%, var(--fundo-2)); border-color: var(--dir); }
+.vetor .c.troca { transform: translateY(-8px); border-color: var(--ok); }
+.vetor .c.fora { opacity: .35; }
+.vetor .c .ponteiro {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.vetor .c .ponteiro.i { color: var(--esq); }
+.vetor .c .ponteiro.j { color: var(--dir); }
+.vetor .c .ponteiro.ij { color: var(--ok); }
+.vetor .c .idx {
+  position: absolute; bottom: calc(100% + 3px); left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px; font-weight: 400; color: var(--texto-2);
+}
+.vetor-legenda { min-height: 3.2em; margin-top: 36px; font-size: 18px; text-align: center; }
+
+/* --- barras da árvore de threads ----------------------------------------- */
+
+.arvore { display: flex; flex-direction: column; gap: 6px; }
+.arvore .linha { position: relative; height: var(--alt, 30px); }
+.arvore .linha .rot {
+  position: absolute; right: calc(100% + 10px); top: 50%; transform: translateY(-50%);
+  font-family: var(--mono); font-size: 13px; color: var(--texto-2); white-space: nowrap;
+}
+.arvore .seg {
+  position: absolute; top: 0; bottom: 0;
+  border-radius: 4px;
+  border: 1px solid var(--fundo);
+  display: grid; place-items: center;
+  font-family: var(--mono); font-size: 12px; font-weight: 700; color: #fff;
+  overflow: hidden;
+  animation: surgir .35s ease both;
+}
+.arvore .seg.folha { opacity: 1; }
+.arvore .seg.part { background-image: repeating-linear-gradient(135deg, rgba(255,255,255,.18) 0 6px, transparent 6px 12px); }
+@keyframes surgir { from { opacity: 0; transform: scaleY(.3); } to { opacity: 1; transform: none; } }
+
+.legenda-threads { display: flex; gap: 14px; flex-wrap: wrap; font-size: 14px; margin-top: 12px; }
+.legenda-threads span { display: inline-flex; align-items: center; gap: 6px; }
+.legenda-threads i { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+
+.carga { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; }
+.carga .item { display: grid; grid-template-columns: 90px 1fr 64px; gap: 10px; align-items: center; font-family: var(--mono); font-size: 13px; }
+.carga .trilho { height: 14px; background: var(--fundo); border: 1px solid var(--linha); border-radius: 4px; overflow: hidden; }
+.carga .enche { height: 100%; transition: width .4s; }
+
+/* --- seletor de botões ---------------------------------------------------- */
+
+.seletor { display: inline-flex; border: 1px solid var(--linha); border-radius: 8px; overflow: hidden; }
+.seletor button {
+  font: inherit; font-size: 15px; color: var(--texto-2); background: var(--fundo-2);
+  border: 0; border-right: 1px solid var(--linha); padding: 6px 13px; cursor: pointer;
+}
+.seletor button:last-child { border-right: 0; }
+.seletor button.ligado { background: var(--destaque); color: #fff; }
+
+/* --- linha do tempo create/join ------------------------------------------ */
+
+.tempo-threads { position: relative; font-family: var(--mono); font-size: 14px; }
+.tempo-threads .raia { display: grid; grid-template-columns: 150px 1fr; align-items: center; gap: 12px; height: 54px; }
+.tempo-threads .raia .nome { color: var(--texto-2); text-align: right; }
+.tempo-threads .pista { position: relative; height: 38px; border-bottom: 1px dashed var(--linha); }
+.tempo-threads .bloco {
+  position: absolute; top: 4px; bottom: 4px; border-radius: 6px;
+  display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 13px;
+  white-space: nowrap; overflow: hidden;
+  transition: opacity .35s, width .6s ease;
+}
+.tempo-threads .bloco.espera { background: transparent !important; border: 2px dashed var(--texto-2); color: var(--texto-2); }
+.tempo-threads .seta {
+  position: absolute; width: 0; border-left: 3px solid var(--ok);
+  transition: opacity .35s;
+}
+.tempo-threads .seta::after {
+  content: ""; position: absolute; left: -8px; width: 0; height: 0;
+  border-left: 7px solid transparent; border-right: 7px solid transparent;
+}
+.tempo-threads .seta.desce::after { bottom: -2px; border-top: 10px solid var(--ok); }
+.tempo-threads .seta.sobe::after { top: -2px; border-bottom: 10px solid var(--ok); }
+.tempo-threads .etq { position: absolute; font-size: 13px; color: var(--ok); font-weight: 700; white-space: nowrap; transition: opacity .35s; }
+.oculto { opacity: 0 !important; }
+
+/* --- código com destaque de linhas --------------------------------------- */
+
+.codigo {
+  font-family: var(--mono);
+  font-size: var(--fs, 15px);
+  line-height: 1.55;
+  background: var(--fundo-2);
+  border: 1px solid var(--linha);
+  border-radius: 10px;
+  padding: 12px 0;
+  overflow-x: auto;
+  counter-reset: none;
+}
+.codigo .ln { display: grid; grid-template-columns: 3.2em 1fr; padding: 0 14px 0 0; white-space: pre; transition: background .25s, opacity .25s; }
+.codigo .ln .n { color: var(--texto-2); text-align: right; padding-right: 1em; user-select: none; opacity: .7; }
+.codigo.focando .ln { opacity: .38; }
+.codigo .ln.on { opacity: 1; background: color-mix(in srgb, var(--destaque) 18%, transparent); box-shadow: inset 3px 0 0 var(--destaque); }
+.codigo .com { color: var(--texto-2); font-style: italic; }
+.codigo .kw { color: var(--destaque); }
+.codigo .fn { color: var(--ok); }
+
+.passos-codigo { display: flex; flex-direction: column; gap: 8px; }
+.passos-codigo button {
+  font: inherit; text-align: left; font-size: 15px; color: var(--texto);
+  background: var(--fundo-2); border: 1px solid var(--linha); border-radius: 8px;
+  padding: 9px 12px; cursor: pointer;
+}
+.passos-codigo button.ligado { border-color: var(--destaque); box-shadow: inset 3px 0 0 var(--destaque); }
+.passos-codigo button b { color: var(--destaque); font-family: var(--mono); margin-right: 6px; }
+.explica { font-size: 16px; line-height: 1.5; color: var(--texto); background: var(--fundo-2); border: 1px solid var(--linha); border-radius: 10px; padding: 12px 14px; min-height: 5.2em; }
+
+/* --- corrida (condição de corrida) --------------------------------------- */
+
+.corrida { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 14px; }
+.corrida th, .corrida td { padding: 6px 8px; border-bottom: 1px solid var(--linha); text-align: center !important; }
+.corrida tr.atual td { background: color-mix(in srgb, var(--alerta) 18%, transparent); }
+.corrida tr.futuro td { opacity: .2; }
+.memoria { display: flex; gap: 10px; align-items: center; justify-content: center; font-family: var(--mono); font-size: 16px; margin-top: 10px; }
+.memoria b { font-size: 26px; padding: 4px 14px; border: 2px solid var(--linha); border-radius: 8px; }
+
+/* --- gráfico de resultados ------------------------------------------------ */
+
+.grafico svg { width: 100%; height: auto; display: block; overflow: visible; }
+.grafico .eixo { stroke: var(--linha); }
+.grafico .grade { stroke: var(--linha); stroke-dasharray: 2 4; }
+.grafico text { fill: var(--texto-2); font-family: var(--mono); font-size: 13px; }
+.grafico text.valor { fill: var(--texto); font-weight: 700; font-size: 14px; }
+.grafico rect.barra { transition: height .45s ease, y .45s ease, opacity .2s; cursor: pointer; }
+.grafico rect.barra:hover { opacity: .8; }
+.grafico .ideal { stroke: var(--texto-2); stroke-width: 2; stroke-dasharray: 6 4; }
+.dica-flutuante {
+  position: fixed; pointer-events: none; z-index: 50;
+  background: var(--fundo-2); border: 1px solid var(--linha); border-radius: 8px;
+  padding: 8px 11px; font-family: var(--mono); font-size: 13px; line-height: 1.5;
+  box-shadow: 0 6px 20px rgba(0,0,0,.25); display: none; color: var(--texto);
+}
+
+/* --- CPUs (gantt) --------------------------------------------------------- */
+
+.gantt { font-family: var(--mono); font-size: 13px; }
+.gantt .raia { display: grid; grid-template-columns: 70px 1fr; gap: 10px; align-items: center; margin-bottom: 6px; }
+.gantt .raia .nome { color: var(--texto-2); text-align: right; }
+.gantt .pista { position: relative; height: 34px; background: var(--fundo); border: 1px solid var(--linha); border-radius: 6px; overflow: hidden; }
+.gantt .fatia { position: absolute; top: 3px; bottom: 3px; border-radius: 3px; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 11px; overflow: hidden; }
+.gantt .fatia.troca { background: repeating-linear-gradient(135deg, var(--texto-2) 0 3px, transparent 3px 6px); opacity: .7; }
+.gantt .fatia.cria { background: var(--texto-2); opacity: .5; }
+.gantt .regua { display: grid; grid-template-columns: 70px 1fr; gap: 10px; color: var(--texto-2); margin-top: 4px; }
+.gantt .cursor { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--alerta); }
+
+/* --- Amdahl --------------------------------------------------------------- */
+
+.amdahl input[type=range] { width: 100%; accent-color: var(--destaque); }
+.amdahl .linha-ctrl { display: grid; grid-template-columns: 230px 1fr 70px; gap: 12px; align-items: center; font-size: 15px; margin-bottom: 8px; }
+.amdahl .linha-ctrl output { font-family: var(--mono); font-weight: 700; text-align: right; }
+.amdahl svg { width: 100%; height: auto; }
+.amdahl svg text { fill: var(--texto-2); font-family: var(--mono); font-size: 12px; }
+.amdahl .curva { fill: none; stroke: var(--destaque); stroke-width: 3; }
+.amdahl .ideal-l { fill: none; stroke: var(--texto-2); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.amdahl .ponto { fill: var(--alerta); stroke: var(--fundo); stroke-width: 2; }
+.grande-num { font-family: var(--mono); font-size: 34px; font-weight: 700; }
+
+/* --- utilidades de slide -------------------------------------------------- */
+
+.slide .rotulo-quem {
+  font-family: var(--mono); font-size: 14px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--destaque); margin: 0 0 8px;
+}
+.slide .chips { display: flex; gap: 10px; flex-wrap: wrap; }
+.slide .chip { font-size: 18px; padding: 6px 14px; border: 1px solid var(--linha); border-radius: 999px; background: var(--fundo-2); }
+.slide .numerao { font-family: var(--mono); font-size: 52px; font-weight: 700; line-height: 1; }
+.slide .caixa p:last-child { margin-bottom: 0; }
+.passo-n { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--destaque); color: #fff; font-weight: 700; font-size: 18px; margin-bottom: 8px; }
+
+/* no slide, o gantt precisa ser legível de longe */
+.slide .gantt { font-size: 15px; }
+.slide .gantt .pista { height: 58px; }
+.slide .gantt .fatia { font-size: 14px; }

@@ -17,6 +17,12 @@ apresentacoes/
     index.html                  os 15 slides do seminário de IA
     demos.js                    as demos interativas
     dados.js                    gerado pelo Python — não editar a mão
+  quicksort-pthreads/
+    index.html                  os 14 slides do trabalho de SO (Quick Sort)
+    demos.js                    as demos interativas (usadas também pelo guia)
+    qs.css                      estilo das demos
+    dados.js                    gerado do resumo.csv — não editar a mão
+    codigo.js                   cópia das linhas do quicksort_par.c — não editar
 guias/
   busca-em-ia/
     index.html                  guia de estudo: o que é cada conceito
@@ -25,6 +31,8 @@ guias/
   roteiro-do-seminario/
     index.html                  o que falar, slide a slide
     roteiro.css                 formato de roteiro, com estilo de impressão
+  quicksort-pthreads/
+    index.html                  guia de estudo do Quick Sort com pthreads
 ```
 
 Os **guias** são páginas que rolam, não apresentações. Servem para estudar antes

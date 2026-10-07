@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="escuro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entendendo o Quick Sort com pthreads — guia do trabalho</title>
+<link rel="stylesheet" href="../../assets/style.css">
+<link rel="stylesheet" href="../busca-em-ia/guia.css">
+<link rel="stylesheet" href="../../apresentacoes/quicksort-pthreads/qs.css">
+<style>
+  /* as demos do slide foram pensadas para 1280px; aqui a coluna é mais estreita */
+  .guia .vetor { --cel: 52px; }
+  .guia [data-demo="codigo"] > div { grid-template-columns: 1fr !important; }
+  .guia .codigo { --fs: 13.5px; }
+  .quem { display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .quem .termo dt { color: var(--destaque); }
+  @media (max-width: 680px) { .quem { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<button class="tema" id="botao-tema">tema</button>
+
+<div class="guia">
+
+<header class="topo">
+  <a class="volta" href="../../">&larr; voltar</a>
+  <h1>Entendendo o Quick Sort com pthreads</h1>
+  <p>O que é thread, como o Quick Sort foi dividido entre elas, por que não
+     precisa de mutex e o que os números querem dizer, com tudo na tela para mexer.</p>
+</header>
+
+<nav class="indice">
+  <h2>O que tem aqui</h2>
+  <ol>
+    <li><a href="#pedido">O que o trabalho pede</a></li>
+    <li><a href="#thread">Thread em dois minutos</a></li>
+    <li><a href="#quicksort">O Quick Sort</a></li>
+    <li><a href="#paralelo">Por que dá para paralelizar</a></li>
+    <li><a href="#create-join">pthread_create e pthread_join</a></li>
+    <li><a href="#corrida">Condição de corrida e mutex</a></li>
+    <li><a href="#codigo">O código, passo a passo</a></li>
+    <li><a href="#medicao">Como medimos</a></li>
+    <li><a href="#speedup">Speedup, eficiência e Amdahl</a></li>
+    <li><a href="#resultados">Os resultados</a></li>
+    <li><a href="#piora">Por que mais threads piorou</a></li>
+    <li><a href="#quem">Quem fala o quê</a></li>
+    <li><a href="#glossario">Glossário</a></li>
+    <li><a href="#perguntas">Se te perguntarem</a></li>
+  </ol>
+</nav>
+
+<!-- ===================================================================== -->
+<section id="pedido">
+  <h2><span class="num">01</span>O que o trabalho pede</h2>
+  <p>O professor quer ver uma coisa: <b>dividir o trabalho entre várias threads
+     deixa o programa mais rápido? Sempre? Quanto?</b> Para responder, cada grupo
+     escolheu um problema. O nosso foi o <b>Quick Sort</b> (problema 3).</p>
+  <table>
+    <tr><th>O que entregar</th><th style="text-align:left">Como fizemos</th></tr>
+    <tr><td>Versão sequencial</td><td style="text-align:left"><code>quicksort_seq.c</code>: ordena com 1 thread</td></tr>
+    <tr><td>Versão paralela</td><td style="text-align:left"><code>quicksort_par.c</code>: o mesmo algoritmo, com <code>pthread.h</code></td></tr>
+    <tr><td>Provar que dão o mesmo resultado</td><td style="text-align:left">comparação byte a byte das saídas (<code>cmp</code>)</td></tr>
+    <tr><td>Medir do mesmo jeito</td><td style="text-align:left">cronômetro só na ordenação, <code>-O2</code> nas duas</td></tr>
+    <tr><td>Configurações</td><td style="text-align:left">sequencial, 2, 4, 8 threads e o máximo de CPUs</td></tr>
+    <tr><td>Repetições</td><td style="text-align:left">10 por combinação (mínimo pedido: 3), 150 execuções</td></tr>
+    <tr><td>Gráficos e relatório</td><td style="text-align:left">tempo médio, speedup, eficiência e a análise</td></tr>
+  </table>
+  <div class="nota alerta">
+    <span class="rotulo">a frase-chave do enunciado</span>
+    <p><b>"Mais threads não significa melhor."</b> O professor não quer que a gente
+       prove que a versão paralela sempre ganha. Quer que a gente meça direito e
+       <b>explique</b> quando ela ganha, quando empata e quando perde.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<section id="thread">
+  <h2><span class="num">02</span>Thread em dois minutos</h2>
+  <p>Um <b>processo</b> é um programa rodando: tem a memória dele, os arquivos
+     abertos dele. Uma <b>thread</b> é uma linha de execução <b>dentro</b> do
+     processo. Todo programa começa com uma thread (a principal), e pode criar
+     outras.</p>
+  <p>Pense numa cozinha. O processo é a cozinha inteira: bancada, geladeira,
+     panelas. Cada thread é um cozinheiro. Vários cozinheiros na <b>mesma cozinha</b>
+     usam a mesma bancada, ou seja, as threads de um processo <b>compartilham a
+     mesma memória</b>. Isso é ótimo (não precisa copiar o vetor para cada uma) e
+     perigoso (dois cozinheiros podem mexer na mesma panela ao mesmo tempo, que é
+     a <a href="#corrida">condição de corrida</a>).</p>
+  <p>E os <b>fogões</b> são as CPUs. Com 2 fogões, no máximo 2 cozinheiros
+     cozinham de verdade ao mesmo tempo. Se você chamar 8 cozinheiros, 6 ficam
+     esperando a vez. Guarde essa imagem: ela explica a <a href="#piora">seção 11</a>.</p>
+  <p class="no-codigo">No código: a biblioteca é a <b>pthreads</b> (POSIX threads),
+     incluída com <code>#include &lt;pthread.h&gt;</code> e compilada com
+     <code>-pthread</code>.</p>
+</section>
+
+<!-- ===================================================================== -->
+<section id="quicksort">
+  <h2><span class="num">03</span>O Quick Sort</h2>
+  <p>A ideia é <b>dividir para conquistar</b>:</p>
+  <ol>
+    <li>Escolha um número do vetor, o <b>pivô</b>.</li>
+    <li>Reorganize o vetor: menores (ou iguais) que o pivô à esquerda, maiores (ou iguais) à direita. Isso é <b>particionar</b>.</li>
+    <li>Repita a mesma coisa em cada lado, até sobrar pedaço de 1 elemento.</li>
+  </ol>
+  <p>Avance passo a passo para ver o particionamento do nosso código (Hoare com
+     mediana de três). O <span class="destaque forte">i</span> anda da esquerda,
+     o <span style="color:var(--dir);font-weight:700">j</span> da direita; quando os
+     dois param num número do lado errado, eles trocam.</p>
+  <div class="painel">
+    <h4>particionamento, passo a passo</h4>
+    <div data-demo="particao" data-cel="52px"></div>
+  </div>
+  <div class="nota">
+    <span class="rotulo">dois detalhes do nosso código</span>
+    <p><b>Mediana de três:</b> em vez de pegar sempre o primeiro número como pivô,
+       olhamos o primeiro, o do meio e o último e usamos o do meio dos três. Isso
+       evita o pior caso (pivô sendo o menor de todos, deixando um lado vazio).</p>
+    <p><b>Insertion sort nos pedaços pequenos:</b> com até 16 elementos, um
+       algoritmo simples é mais rápido que continuar dividindo.</p>
+  </div>
+  <p class="no-codigo">No código: <b>comum.h</b> — <code>particionar()</code> e
+     <code>quicksort_seq()</code>. As duas versões usam essas mesmas funções.</p>
+</section>
+
+<!-- ===================================================================== -->
+<section id="paralelo">
+  <h2><span class="num">04</span>Por que dá para paralelizar</h2>
+  <p>Repare no fim da demo anterior: depois de particionar, <b>nenhum número da
+     esquerda vai para a direita, nem o contrário</b>. Os dois lados são
+     independentes. Então dá para entregar cada lado para uma thread diferente.</p>
+  <p>Na demo abaixo, cada faixa é um pedaço do vetor e a cor diz qual thread
+     trabalha nele. Escolha o número de threads e clique em <b>animar</b>.</p>
+  <div class="painel">
+    <h4>como o vetor é repartido entre as threads</h4>
+    <div data-demo="arvore" data-p="4" data-alt="28px"></div>
+  </div>
+  <p>Três coisas para notar:</p>
+  <ul>
+    <li><b>Nível 0 é só da T1.</b> A primeira partição percorre o vetor inteiro
+        com uma thread só, antes de existir qualquer divisão. Essa parte não
+        paraleliza. É ela que impede o ganho de chegar a 2× com 2 threads
+        (<a href="#speedup">Amdahl</a>).</li>
+    <li><b>Orçamento de threads.</b> Cada chamada recebe quantas threads pode usar
+        e reparte entre os lados pelo tamanho. Pedindo 4, nunca passam de 4.</li>
+    <li><b>A carga não fica igual.</b> As barras do fim mostram quanto cada thread
+        ordenou: o pivô não divide exatamente ao meio.</li>
+  </ul>
+  <p class="miudo">A demo usa um vetor de 2.000 números e limite de 128 para caber
+     na tela. O programa de verdade usa limite de 4.096 com vetores de até 400 mil
+     números; a lógica é a mesma.</p>
+</section>
+
+<!-- ===================================================================== -->
+<section id="create-join">
+  <h2><span class="num">05</span>pthread_create e pthread_join</h2>
+  <p>Só duas funções da biblioteca fazem todo o trabalho:</p>
+  <table>
+    <tr><th>Função</th><th style="text-align:left">O que faz</th></tr>
+    <tr><td><code>pthread_create</code></td><td style="text-align:left">cria uma thread nova e manda ela executar uma função</td></tr>
+    <tr><td><code>pthread_join</code></td><td style="text-align:left">espera uma thread terminar</td></tr>
+  </table>
+  <div class="painel">
+    <h4>linha do tempo de uma divisão</h4>
+    <div data-demo="createjoin" data-fs="13.5px"></div>
+  </div>
+  <p>Um detalhe de C: a função que a thread executa precisa ter o formato
+     <code>void *funcao(void *arg)</code>, recebendo <b>um único</b> ponteiro. Como
+     precisamos passar 4 coisas (vetor, começo, fim, orçamento), empacotamos tudo
+     numa <code>struct Tarefa</code> e passamos o endereço dela. A
+     <code>rotina_thread</code> só desempacota e chama <code>quicksort_par</code>.</p>
+<pre><code>typedef struct { int *v; long lo, hi; int orcamento; } Tarefa;
+
+static void *rotina_thread(void *arg) {
+    Tarefa *t = (Tarefa *)arg;
+    quicksort_par(t->v, t->lo, t->hi, t->orcamento);
+    return NULL;
+}</code></pre>
+  <div class="nota ok">
+    <span class="rotulo">por que a struct pode ficar na pilha</span>
+    <p>A <code>Tarefa esq</code> é uma variável local. Isso só é seguro porque a
+       função <b>espera a thread terminar</b> (<code>pthread_join</code>) antes de
+       retornar. Se retornasse antes, a nova thread estaria lendo memória que já
+       não existe.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<section id="corrida">
+  <h2><span class="num">06</span>Condição de corrida e mutex</h2>
+  <p><b>Condição de corrida</b> é quando duas threads mexem no mesmo dado ao mesmo
+     tempo e o resultado depende de quem chega primeiro. O exemplo clássico é
+     <code>contador++</code>, que parece uma operação só mas são três: ler, somar,
+     gravar. Avance a tabela:</p>
+  <div class="painel">
+    <h4>duas threads fazendo contador++</h4>
+    <div data-demo="corrida"></div>
+  </div>
+  <p>O <b>mutex</b> (trava) resolve isso: só uma thread por vez entra no trecho
+     que mexe no contador. Mas trava tem custo, e as threads ficam esperando umas
+     às outras.</p>
+  <div class="nota ok">
+    <span class="rotulo">por que o nosso código não precisa de mutex</span>
+    <p>Depois da partição, cada thread escreve <b>só na sua faixa</b> do vetor:
+       <code>v[lo..p]</code> para uma, <code>v[p+1..hi]</code> para a outra. As
+       faixas não se sobrepõem, então não existe dado escrito por duas threads ao
+       mesmo tempo. A única sincronização necessária é o <code>pthread_join</code>,
+       para saber quando a outra terminou.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<section id="codigo">
+  <h2><span class="num">07</span>O código, passo a passo</h2>
+  <p>Esta é a função <code>quicksort_par</code> inteira, copiada do arquivo.
+     Clique em cada passo para ver as linhas dele.</p>
+  <div class="painel">
+    <h4>quicksort_par.c, linhas 52–78</h4>
+    <div data-demo="codigo" data-de="52" data-ate="78" data-inicial="0"></div>
+  </div>
+  <h3>E o main?</h3>
+  <p>O <code>main</code> lê o número de threads da linha de comando (um número ou
+     <code>max</code>, que usa <code>sysconf(_SC_NPROCESSORS_ONLN)</code> para
+     descobrir quantas CPUs a máquina tem), lê o arquivo, e só então liga o
+     cronômetro em volta da ordenação:</p>
+<pre><code>double t0 = agora_segundos();
+quicksort_par(v, 0, n - 1, threads);     /* &lt;-- região medida */
+double t1 = agora_segundos();</code></pre>
+  <p>Depois confere se o vetor está em ordem e se a soma dos números é a mesma de
+     antes, e imprime uma linha: <code>pthreads,2,400000,0.018…,1,1</code>.</p>
+</section>
+
+<!-- ===================================================================== -->
+<section id="medicao">
+  <h2><span class="num">08</span>Como medimos</h2>
+  <p>Uma comparação só vale se for justa. O checklist do professor e o que
+     fizemos em cada item:</p>
+  <table>
+    <tr><th>Regra</th><th style="text-align:left">Como cumprimos</th></tr>
+    <tr><td>Mesma entrada</td><td style="text-align:left">os mesmos 3 arquivos para as duas versões</td></tr>
+    <tr><td>Mesma região medida</td><td style="text-align:left">só a chamada da ordenação; leitura e verificação ficam fora nas duas</td></tr>
+    <tr><td>Mesma otimização</td><td style="text-align:left"><code>gcc -O2</code> nas duas</td></tr>
+    <tr><td>Não piorar a sequencial</td><td style="text-align:left">a paralela usa a <b>mesma</b> função sequencial nos pedaços</td></tr>
+    <tr><td>Registrar a máquina</td><td style="text-align:left">VM Linux, Intel Xeon, 2 CPUs lógicas, gcc 13.3</td></tr>
+    <tr><td>Preservar resultado contrário</td><td style="text-align:left">a piora com 8 threads está nos gráficos e explicada</td></tr>
+  </table>
+  <p><b>Repetições intercaladas:</b> em vez de rodar 10× a sequencial e depois 10×
+     a de 2 threads, rodamos seq, 2, 4, 8, máx, seq, 2… Se a máquina ficar lenta
+     por um instante, isso respinga em todas as configurações, não só numa.</p>
+  <p><b>Relógio:</b> <code>clock_gettime(CLOCK_MONOTONIC)</code>, que só anda para
+     frente (não é afetado se alguém mudar a hora do sistema).</p>
+  <p><b>Validação, em três camadas:</b> (1) a saída de cada versão paralela foi
+     comparada byte a byte com a sequencial; (2) a sequencial foi conferida contra
+     o <code>sort -n</code> do Linux; (3) cada execução confere sozinha se o vetor
+     está em ordem e se a soma dos elementos não mudou (nada sumiu nem duplicou).</p>
+</section>
+
+<!-- ===================================================================== -->
+<section id="speedup">
+  <h2><span class="num">09</span>Speedup, eficiência e Amdahl</h2>
+  <div class="medidores" style="grid-template-columns:1fr 1fr">
+    <div class="medidor"><div class="nome">speedup</div><div class="valor">S = T<sub>seq</sub> / T<sub>p</sub></div><div class="exp">quantas vezes ficou mais rápido</div></div>
+    <div class="medidor"><div class="nome">eficiência</div><div class="valor">E = S / p</div><div class="exp">quanto cada thread rendeu (1 = ideal)</div></div>
+  </div>
+  <h3>A conta com os nossos números</h3>
+  <p>Entrada grande, 2 threads: T<sub>seq</sub> = <span data-num="grande.seq.media_ms">32,85</span> ms e
+     T<sub>2</sub> = <span data-num="grande.2.media_ms">18,01</span> ms.</p>
+<pre><code>S = 32,85 / 18,01 = 1,82   → 1,82 vezes mais rápido
+E = 1,82 / 2      = 0,91   → 91% do ideal</code></pre>
+  <h3>Lei de Amdahl: o teto do ganho</h3>
+  <p>Se uma fração <b>s</b> do trabalho só pode rodar numa thread, o speedup com
+     <b>p</b> threads é no máximo <code>1 / (s + (1 − s) / p)</code>. Mexa nos
+     controles:</p>
+  <div class="painel">
+    <h4>Lei de Amdahl</h4>
+    <div data-demo="amdahl" data-s="10" data-p="2"></div>
+  </div>
+  <p>No nosso Quick Sort, a parte que só roda numa thread é o
+     <b>primeiro particionamento</b> (o nível 0 da <a href="#paralelo">seção 4</a>).</p>
+  <div class="nota">
+    <span class="rotulo">curiosidade (conta, não medição)</span>
+    <p>Se toda a perda viesse só da parte sequencial, dá para fazer a conta ao
+       contrário: com S = 1,82 e p = 2, s = 2/1,82 − 1 ≈ 0,10, ou seja, uns 10%.
+       Na prática parte da perda também vem do desequilíbrio do pivô e do custo de
+       criar threads, então isso é só uma ordem de grandeza.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<section id="resultados">
+  <h2><span class="num">10</span>Os resultados</h2>
+  <p>Os números medidos, direto dos arquivos de resultado. Troque a entrada e a
+     métrica e passe o mouse nas barras.</p>
+  <div class="painel">
+    <h4>resultados medidos (10 repetições cada)</h4>
+    <div data-demo="grafico" data-entrada="grande" data-metrica="tempo" data-altura="300"></div>
+  </div>
+  <table>
+    <tr><th>Entrada</th><th>Sequencial</th><th>2 threads</th><th>Speedup</th><th>Eficiência</th></tr>
+    <tr><td>pequena (20 mil)</td><td class="num"><span data-num="pequena.seq.media_ms">1,29</span> ms</td><td class="num"><span data-num="pequena.2.media_ms">1,07</span> ms</td><td class="num"><span data-num="pequena.2.speedup">1,21</span>×</td><td class="num"><span data-num="pequena.2.eficiencia">0,60</span></td></tr>
+    <tr><td>média (120 mil)</td><td class="num"><span data-num="media.seq.media_ms">8,92</span> ms</td><td class="num"><span data-num="media.2.media_ms">6,10</span> ms</td><td class="num"><span data-num="media.2.speedup">1,46</span>×</td><td class="num"><span data-num="media.2.eficiencia">0,73</span></td></tr>
+    <tr><td>grande (400 mil)</td><td class="num"><span data-num="grande.seq.media_ms">32,85</span> ms</td><td class="num"><span data-num="grande.2.media_ms">18,01</span> ms</td><td class="num"><span data-num="grande.2.speedup">1,82</span>×</td><td class="num"><span data-num="grande.2.eficiencia">0,91</span></td></tr>
+  </table>
+  <h3>Como ler</h3>
+  <ul>
+    <li><b class="ok">Ganho:</b> a paralela venceu nas três entradas, e quanto maior
+        a entrada, maior o ganho. Em vetor pequeno o custo fixo de criar e esperar
+        threads pesa mais.</li>
+    <li><b class="alerta">Saturação:</b> com 4 e 8 threads o ganho parou de subir:
+        só existem 2 CPUs.</li>
+    <li><b class="erro">Piora:</b> na entrada grande, 8 threads levaram
+        <span data-num="grande.8.media_ms">20,36</span> ms, mais que as
+        <span data-num="grande.2.media_ms">18,01</span> ms de 2 threads.</li>
+    <li><b>Um ponto fora da curva:</b> na média com 2 threads, a 1ª repetição levou
+        9,1 ms, contra cerca de 5,7 ms nas outras. Isso puxa a média para cima e o
+        desvio padrão mostra. É por isso que se repete a medição.</li>
+  </ul>
+</section>
+
+<!-- ===================================================================== -->
+<section id="piora">
+  <h2><span class="num">11</span>Por que mais threads piorou</h2>
+  <p>Volte aos cozinheiros: 2 fogões, 8 cozinheiros. Eles revezam, e cada troca de
+     cozinheiro no fogão custa um tempinho (tirar uma panela, pôr outra). No
+     computador isso é a <b>troca de contexto</b>: o sistema operacional salva o
+     estado de uma thread e carrega o de outra. Ainda tem o custo de
+     <b>criar</b> cada thread.</p>
+  <div class="painel">
+    <h4>2 CPUs dividindo o mesmo trabalho entre k threads</h4>
+    <div data-demo="cpus" data-k="8"></div>
+  </div>
+  <p>Com 2 threads, cada uma fica no seu núcleo e não há troca. Com 8, o mesmo
+     trabalho total gasta tempo extra com criação e trocas. É o que medimos:
+     18,0 → 20,4 ms na entrada grande.</p>
+  <div class="nota alerta">
+    <span class="rotulo">cuidado ao explicar</span>
+    <p>A animação é um <b>modelo didático</b>: os tempos dela não são medidos. Os
+       números de verdade são os da <a href="#resultados">seção 10</a>.</p>
+  </div>
+  <p>Numa máquina com mais núcleos (8 ou 12, por exemplo), 4 e 8 threads devem
+     dar ganho maior. Mesmo assim, o primeiro particionamento sequencial continua
+     limitando o teto.</p>
+</section>
+
+<!-- ===================================================================== -->
+<section id="quem">
+  <h2><span class="num">12</span>Quem fala o quê</h2>
+  <p>A <a href="../../apresentacoes/quicksort-pthreads/">apresentação</a> tem a
+     fala de cada um nas notas (tecla <kbd>n</kbd>).</p>
+  <dl class="quem">
+    <div class="termo"><dt>Vinicius · slides 1–3</dt><dd>Abertura, o que foi pedido e como o Quick Sort funciona (demo do particionamento).</dd></div>
+    <div class="termo"><dt>Luiz · slides 4–8</dt><dd>Como paralelizamos (árvore de threads), o código, create/join, por que não tem mutex e a medição.</dd></div>
+    <div class="termo"><dt>Raphael · slides 9–14</dt><dd>Metodologia, gráficos, Amdahl, por que mais threads piorou e a conclusão.</dd></div>
+  </dl>
+</section>
+
+<!-- ===================================================================== -->
+<section id="glossario">
+  <h2><span class="num">13</span>Glossário</h2>
+  <dl class="glossario">
+    <div class="termo"><dt>Thread</dt><dd>Linha de execução dentro de um processo. As threads de um processo <b>compartilham a memória</b>.</dd></div>
+    <div class="termo"><dt>pthreads</dt><dd>A biblioteca de threads padrão POSIX (Linux, macOS). Usada com <code>#include &lt;pthread.h&gt;</code>.</dd></div>
+    <div class="termo"><dt>pthread_create</dt><dd>Cria uma thread nova e manda ela executar uma função.</dd></div>
+    <div class="termo"><dt>pthread_join</dt><dd>Faz a thread atual <b>esperar</b> outra terminar.</dd></div>
+    <div class="termo"><dt>Pivô</dt><dd>O número usado para separar menores e maiores. No nosso código, a mediana de três.</dd></div>
+    <div class="termo"><dt>Particionar</dt><dd>Reorganizar o trecho em "≤ pivô" e "≥ pivô". Depois disso, os dois lados são independentes.</dd></div>
+    <div class="termo"><dt>Condição de corrida</dt><dd>Resultado errado porque duas threads mexeram no mesmo dado ao mesmo tempo.</dd></div>
+    <div class="termo"><dt>Mutex</dt><dd>Trava que deixa só uma thread por vez num trecho. Não precisamos porque as faixas do vetor não se sobrepõem.</dd></div>
+    <div class="termo"><dt>Orçamento de threads</dt><dd>Quantas threads uma chamada ainda pode usar; é dividido entre os lados pelo tamanho.</dd></div>
+    <div class="termo"><dt>LIMITE_PARALELO</dt><dd>4.096: trechos menores que isso não ganham thread nova.</dd></div>
+    <div class="termo"><dt>Speedup</dt><dd>T<sub>seq</sub> ÷ T<sub>p</sub>. Quantas vezes ficou mais rápido.</dd></div>
+    <div class="termo"><dt>Eficiência</dt><dd>Speedup ÷ p. Quanto cada thread rendeu; 1 é o ideal.</dd></div>
+    <div class="termo"><dt>Lei de Amdahl</dt><dd>A parte que só roda numa thread define um teto para o ganho, por mais threads que se use.</dd></div>
+    <div class="termo"><dt>Troca de contexto</dt><dd>O sistema salva uma thread e carrega outra no mesmo núcleo. Custa tempo e não produz trabalho.</dd></div>
+    <div class="termo"><dt>CPU lógica</dt><dd>Cada "núcleo" que o sistema enxerga. A máquina dos testes tinha 2.</dd></div>
+    <div class="termo"><dt>Desvio padrão</dt><dd>Quanto as repetições variaram em torno da média.</dd></div>
+  </dl>
+</section>
+
+<!-- ===================================================================== -->
+<section id="perguntas">
+  <h2><span class="num">14</span>Se te perguntarem</h2>
+  <details class="pergunta"><summary>Por que não usaram mutex?</summary><div class="resposta"><p>Porque cada thread escreve <b>só na sua faixa</b> do vetor e as faixas não se sobrepõem. Não existe dado escrito por duas threads ao mesmo tempo, então não há condição de corrida. A sincronização necessária é o <code>pthread_join</code>.</p></div></details>
+  <details class="pergunta"><summary>Por que o speedup não chegou a 2 com 2 CPUs?</summary><div class="resposta"><p>O <b>primeiro particionamento</b> percorre o vetor inteiro com uma thread só; essa parte não paraleliza (Lei de Amdahl). E o pivô não divide exatamente ao meio, então uma thread termina antes e espera a outra.</p></div></details>
+  <details class="pergunta"><summary>Por que 8 threads foi mais lento que 2?</summary><div class="resposta"><p>Só havia 2 CPUs. As threads extras custam para <b>criar</b> e passam a <b>revezar</b> nos mesmos núcleos (troca de contexto), sem processamento a mais.</p></div></details>
+  <details class="pergunta"><summary>Como vocês controlam quantas threads existem?</summary><div class="resposta"><p>Com um <b>orçamento</b> passado na recursão e dividido entre os lados proporcionalmente ao tamanho. Quando chega a 1, a chamada segue sequencial. Nunca passam de p threads ativas.</p></div></details>
+  <details class="pergunta"><summary>Por que o limite de 4.096 elementos?</summary><div class="resposta"><p>Para pedaços pequenos, criar uma thread custa mais que o tempo que ela economiza. Abaixo disso é mais rápido ordenar direto.</p></div></details>
+  <details class="pergunta"><summary>Como sabem que as duas versões dão o mesmo resultado?</summary><div class="resposta"><p>Comparamos a saída byte a byte com <code>cmp</code> em todas as configurações e conferimos a sequencial contra o <code>sort -n</code>. Cada execução também confere se está em ordem e se a soma dos números não mudou.</p></div></details>
+  <details class="pergunta"><summary>O que exatamente foi cronometrado?</summary><div class="resposta"><p>Só a chamada da ordenação, com <code>clock_gettime(CLOCK_MONOTONIC)</code>. A leitura do arquivo e as verificações ficaram fora nas duas versões.</p></div></details>
+  <details class="pergunta"><summary>A versão paralela não é "outro algoritmo"?</summary><div class="resposta"><p>Não. Ela usa o mesmo <code>particionar</code> e, nos pedaços, chama o mesmo <code>quicksort_seq</code>. A única diferença é que os níveis de cima da recursão são distribuídos entre threads.</p></div></details>
+  <details class="pergunta"><summary>Por que a struct Tarefa pode ser variável local?</summary><div class="resposta"><p>Porque a função espera a thread terminar (<code>pthread_join</code>) antes de retornar. Enquanto a thread nova usa a struct, ela ainda existe.</p></div></details>
+  <details class="pergunta"><summary>E se o pthread_create falhar?</summary><div class="resposta"><p>O código testa o retorno. Se falhar, a mesma thread ordena os dois lados. O programa fica mais lento, mas não quebra nem dá resultado errado.</p></div></details>
+  <details class="pergunta"><summary>Num computador com mais núcleos, o que mudaria?</summary><div class="resposta"><p>Esperamos speedup maior com 4 e 8 threads, até o número de núcleos. O primeiro particionamento sequencial continuaria limitando o teto.</p></div></details>
+</section>
+
+</div>
+
+<script src="../../apresentacoes/quicksort-pthreads/dados.js"></script>
+<script src="../../apresentacoes/quicksort-pthreads/codigo.js"></script>
+<script src="../../apresentacoes/quicksort-pthreads/demos.js"></script>
+<script>
+(function () {
+  var raiz = document.documentElement;
+  try { var salvo = localStorage.getItem("tema"); if (salvo) raiz.dataset.tema = salvo; } catch (e) { /* anônimo */ }
+  document.getElementById("botao-tema").addEventListener("click", function () {
+    raiz.dataset.tema = raiz.dataset.tema === "claro" ? "escuro" : "claro";
+    try { localStorage.setItem("tema", raiz.dataset.tema); } catch (e) { /* anônimo */ }
+  });
+})();
+</script>
+</body>
+</html>
