@@ -23,6 +23,9 @@ apresentacoes/
     qs.css                      estilo das demos
     dados.js                    gerado do resumo.csv — não editar a mão
     codigo.js                   cópia das linhas do quicksort_par.c — não editar
+  jantar-filosofos/
+    index.html                  os 19 slides do trabalho de SO (Jantar dos filósofos)
+    graficos/                   G1–G4 e o extra, recortados do PDF dos slides
 guias/
   busca-em-ia/
     index.html                  guia de estudo: o que é cada conceito

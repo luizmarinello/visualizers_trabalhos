@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="escuro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jantar dos filósofos</title>
+<link rel="stylesheet" href="../../assets/style.css">
+<style>
+  /* Só o que este trabalho usa a mais; o resto vem do tema. */
+  .mesa { width: 100%; height: auto; }
+  .mesa .tampo { fill: color-mix(in srgb, var(--alerta) 14%, var(--fundo-2)); stroke: color-mix(in srgb, var(--alerta) 40%, var(--linha)); stroke-width: 2; }
+  .mesa .filo { fill: var(--destaque); }
+  .mesa .filo-txt { fill: #fff; font: 700 22px var(--fonte); text-anchor: middle; dominant-baseline: central; }
+  .mesa .garfo { stroke: #e8743b; stroke-width: 7; stroke-linecap: round; }
+  .mesa .garfo-txt { fill: #e8743b; font: 700 17px var(--fonte); text-anchor: middle; dominant-baseline: central; }
+  .regras p { margin: 0 0 10px; font-size: 21px; }
+  .borda-azul { border-left: 5px solid var(--destaque); }
+  .borda-laranja { border-left: 5px solid #e8743b; }
+  /* Os gráficos são as imagens geradas pelo matplotlib, com fundo branco. */
+  .grafico { width: 100%; border-radius: 12px; display: block; background: #fff; }
+  .numerao { font-size: 64px; font-weight: 800; color: var(--destaque); line-height: 1; margin-bottom: 14px; }
+  .rodape { margin-top: auto; }
+  .slide td, .slide th { text-align: left; }
+</style>
+</head>
+<body>
+
+<div class="palco">
+
+<!-- ======================================================= RAPHAEL ===== -->
+
+<section class="slide capa">
+  <p class="miudo destaque">Sistemas Operacionais · Tema 3</p>
+  <h1>Jantar dos filósofos</h1>
+  <p class="sub">Cinco (ou dez, ou vinte) threads disputando garfos — sem travar e sem deixar ninguém com fome.</p>
+  <p class="miudo" style="margin-top:28px">Luiz Henrique · Vinicius · Raphael &nbsp;—&nbsp; Prof. Lucca Abbado Neres · FAG · nov/2026</p>
+</section>
+
+<section class="slide">
+  <p class="miudo destaque">Fala: Raphael</p>
+  <h2>O problema</h2>
+  <div class="colunas" style="grid-template-columns:1fr 440px">
+    <div class="coluna">
+      <p>Filósofos sentados numa mesa redonda alternam entre <b>pensar</b> e <b>comer</b>. Entre dois vizinhos existe <b>um único garfo</b>.</p>
+      <div class="caixa regras">
+        <p><b>R1</b> · um garfo pertence a no máximo um filósofo por vez</p>
+        <p><b>R2</b> · para comer precisa dos <b>dois</b> garfos ao lado</p>
+        <p><b>R3</b> · quem não é vizinho pode comer ao mesmo tempo</p>
+        <p style="margin:0"><b>R4</b> · sem deadlock e sem ninguém esperando para sempre</p>
+      </div>
+      <p class="miudo" style="margin-top:16px">Filósofo = thread · garfo = recurso compartilhado · 1.200 refeições de 1 ms</p>
+    </div>
+    <div class="coluna" style="justify-content:center">
+      <svg class="mesa" id="mesa" viewBox="-220 -220 440 440" aria-label="Mesa com 5 filósofos e 5 garfos"></svg>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <p class="miudo destaque">Fala: Raphael</p>
+  <h2>O que é sincronização entre processos?</h2>
+  <p>É combinar <b>a ordem</b> em que processos ou threads mexem num recurso que eles <b>dividem</b>, para que o resultado não dependa da sorte do escalonador.</p>
+  <div class="colunas tres" style="flex:none;margin-top:18px">
+    <div class="caixa"><h3>Exclusão mútua</h3><p>Só um por vez dentro da <b>seção crítica</b> (o trecho que mexe no dado comum).</p></div>
+    <div class="caixa"><h3>Esperar um evento</h3><p>Dormir até algo acontecer (“o garfo ficou livre”) sem gastar CPU.</p></div>
+    <div class="caixa"><h3>Por que no SO?</h3><p>O SO troca a thread a qualquer momento e, com várias CPUs, elas rodam ao mesmo tempo.</p></div>
+  </div>
+  <p class="miudo rodape">Pergunta do professor 1</p>
+</section>
+
+<section class="slide">
+  <p class="miudo destaque">Fala: Raphael</p>
+  <h2>Mutex e semáforo</h2>
+  <div class="colunas" style="flex:none">
+    <div class="caixa">
+      <h3>Mutex</h3>
+      <p><b>Uma chave de banheiro</b></p>
+      <p>Trava com <b>lock</b>, destrava com <b>unlock</b>. Só um entra; quem chega depois dorme na porta. Quem trancou é quem destranca.</p>
+      <pre><code>pthread_mutex_lock(&amp;m);</code></pre>
+    </div>
+    <div class="caixa" style="margin-top:0">
+      <h3>Semáforo</h3>
+      <p><b>Um contador de vagas</b></p>
+      <p><b>wait</b> pega uma vaga (dorme se for 0), <b>post</b> devolve. Com valor N deixa N passarem; qualquer thread pode dar post.</p>
+      <pre><code>sem_wait(&amp;s); sem_post(&amp;s);</code></pre>
+    </div>
+  </div>
+  <p style="margin-top:18px"><b>Nós usamos:</b> mutex + <b>variável de condição</b> (“dorme até a condição mudar”). Juntos formam um <b>monitor</b>.</p>
+  <p class="miudo rodape">Pergunta do professor 2</p>
+</section>
+
+<section class="slide">
+  <p class="miudo destaque">Fala: Raphael</p>
+  <h2>Onde isso aparece num SO de verdade</h2>
+  <table>
+    <tr><th>No jantar</th><th>No sistema operacional</th></tr>
+    <tr><td><b>Filósofo</b></td><td>Processo ou thread que precisa de recursos</td></tr>
+    <tr><td><b>Garfo</b></td><td>Recurso exclusivo: lock de arquivo, linha de banco, dispositivo, buffer</td></tr>
+    <tr><td><b>Precisar de 2 garfos</b></td><td>Transferência entre duas contas, copiar entre dois arquivos travados</td></tr>
+    <tr><td><b>Ciclo de espera</b></td><td>Deadlock entre processos — o sistema “congela” sem erro</td></tr>
+    <tr><td><b>Quem fica sem comer</b></td><td>Starvation: um processo de baixa prioridade que nunca recebe CPU</td></tr>
+  </table>
+  <p style="margin-top:20px">O kernel do Linux evita o mesmo problema com <b>ordem fixa de travamento</b> (lock ordering) — a mesma ideia da nossa estratégia de comparação.</p>
+  <p class="miudo rodape">Pergunta do professor 3</p>
+</section>
+
+<section class="slide">
+  <p class="miudo destaque">Fala: Raphael</p>
+  <h2>Sem cuidado: a solução ingênua trava</h2>
+  <div class="colunas">
+    <div class="coluna">
+      <p>Todos fazem: pega o garfo da esquerda, depois o da direita.</p>
+      <div class="caixa" style="font-family:var(--mono);font-size:19px;line-height:1.7">
+        t1 · F0 pega G0<br>t2 · F1 pega G1<br>t3 · F2 pega G2 … F4 pega G4<br>
+        t4 · F0 espera G1 (está com F1)<br>… F4 espera G0 (está com F0)
+      </div>
+      <p class="erro forte" style="margin-top:16px">Ciclo fechado → deadlock. Ninguém solta, ninguém come.</p>
+    </div>
+    <div class="coluna">
+      <h3>Rodamos de verdade (modo ingenua, 5 filósofos):</h3>
+<pre><code><span class="erro">TIMEOUT apos 3.0 s: 0 de 5 terminaram.</span>
+garfo 0 -&gt; filosofo 0
+garfo 1 -&gt; filosofo 1
+garfo 2 -&gt; filosofo 2
+garfo 3 -&gt; filosofo 3
+garfo 4 -&gt; filosofo 4</code></pre>
+      <p class="miudo">Outros riscos sem sincronização: <b>condição de corrida</b> (dois pegam o mesmo garfo), dados inconsistentes e <b>starvation</b>.</p>
+    </div>
+  </div>
+  <p class="miudo rodape">Pergunta do professor 4</p>
+</section>
+
+<!-- ========================================================== LUIZ ====== -->
+
+<section class="slide">
+  <p class="miudo destaque">Fala: Luiz</p>
+  <h2>Nossa solução: duas ideias simples</h2>
+  <div class="colunas">
+    <div class="coluna">
+      <div class="caixa borda-azul"><h3>1 · Tudo ou nada</h3><p style="margin:0">Só pega os garfos quando <b>os dois</b> estão livres, numa única operação. Nunca fica segurando um esperando o outro.</p></div>
+      <div class="caixa borda-laranja"><h3>2 · Senha de fila</h3><p style="margin:0">Ao ficar com fome tira uma senha. Se o vizinho ficou com fome <b>antes</b>, ele tem a vez.</p></div>
+      <p class="miudo" style="margin-top:16px">Mecanismo: 1 mutex + 1 variável de condição por filósofo = monitor</p>
+    </div>
+    <div class="coluna">
+      <h3>A vida de cada thread-filósofo (main.c)</h3>
+<pre><code>for (r = 0; r &lt; cota; r++) {
+  dormir_ms(pensar_ms);   <span class="miudo">// PENSA</span>
+  t_pedido = agora_ms();  <span class="miudo">// fome</span>
+  <span class="destaque">pegar_garfos(id, &amp;t_aut);</span>
+  espera[r] = t_aut - t_pedido;
+  dormir_ms(comer_ms);    <span class="miudo">// COME</span>
+  <span class="destaque">soltar_garfos(id);</span>
+}</code></pre>
+      <p>Pensar e comer ficam <b>fora</b> do mutex: a seção crítica é só a decisão.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <p class="miudo destaque">Fala: Luiz</p>
+  <h2>O coração: <code>pode_comer(i)</code></h2>
+  <div class="colunas" style="grid-template-columns:1fr 400px">
+    <div class="coluna">
+<pre><code><span class="miudo">/* mesa.c — chamada com mesa_mtx travado */</span>
+static bool pode_comer(int i) {
+  int e = ESQ(i), d = DIR(i);
+  if (estado[i] != COM_FOME) return false;
+
+  <span class="destaque">if (estado[e] == COMENDO ||
+      estado[d] == COMENDO) return false;</span>
+
+  <span class="alerta">if (estado[e] == COM_FOME &amp;&amp;
+      senha[e] &lt; senha[i]) return false;
+  if (estado[d] == COM_FOME &amp;&amp;
+      senha[d] &lt; senha[i]) return false;</span>
+  return true;
+}</code></pre>
+    </div>
+    <div class="coluna">
+      <div class="caixa borda-azul"><h3>Garfo ocupado?</h3><p style="margin:0">Se um vizinho come, um dos meus garfos está com ele.</p></div>
+      <div class="caixa borda-laranja"><h3>Alguém chegou antes?</h3><p style="margin:0">Vizinho com fome e senha menor tem a vez.</p></div>
+      <p class="miudo" style="margin-top:16px">Estados: PENSANDO → COM_FOME → COMENDO</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <p class="miudo destaque">Fala: Luiz</p>
+  <h2>Pegar e soltar os garfos</h2>
+  <div class="colunas">
+    <div class="coluna">
+      <h3>pegar_justa(i)</h3>
+<pre><code>pthread_mutex_lock(&amp;mesa_mtx);
+estado[i] = COM_FOME;
+senha[i] = proxima_senha++;
+<span class="destaque">while (!pode_comer(i) &amp;&amp; !abortar)
+  pthread_cond_wait(&amp;vez[i], &amp;mesa_mtx);</span>
+estado[i] = COMENDO;
+tomar_garfo(i, i);        <span class="miudo">// os dois</span>
+tomar_garfo(DIR(i), i);
+*t_aut = agora_ms();
+pthread_mutex_unlock(&amp;mesa_mtx);</code></pre>
+    </div>
+    <div class="coluna">
+      <h3>soltar_justa(i)</h3>
+<pre><code>pthread_mutex_lock(&amp;mesa_mtx);
+devolver_garfo(i, i);
+devolver_garfo(DIR(i), i);
+estado[i] = PENSANDO;
+<span class="miudo">// acorda só os 2 vizinhos</span>
+<span class="destaque">pthread_cond_signal(&amp;vez[ESQ(i)]);
+pthread_cond_signal(&amp;vez[DIR(i)]);</span>
+pthread_mutex_unlock(&amp;mesa_mtx);</code></pre>
+    </div>
+  </div>
+  <p class="rodape"><code>cond_wait</code> <b>solta o mutex e dorme</b> sem gastar CPU; ao acordar, retrava e testa de novo (por isso é <code>while</code>, não <code>if</code>).</p>
+</section>
+
+<section class="slide">
+  <p class="miudo destaque">Fala: Luiz</p>
+  <h2>Por que não trava e ninguém passa fome</h2>
+  <div class="colunas">
+    <div class="coluna">
+      <h3>Deadlock precisa das 4 condições</h3>
+      <table>
+        <tr><th>Condição (Coffman)</th><th>Na solução</th></tr>
+        <tr><td>Exclusão mútua</td><td>mantida</td></tr>
+        <tr><td>Sem preempção</td><td>mantida</td></tr>
+        <tr><td><b>Posse e espera</b></td><td class="ok forte">eliminada</td></tr>
+        <tr><td><b>Espera circular</b></td><td class="ok forte">impossível</td></tr>
+      </table>
+      <p class="miudo" style="margin-top:14px">Os dois garfos são pegos juntos, então ninguém segura um esperando o outro: o ciclo não se forma em <b>nenhuma</b> ordem de execução.</p>
+    </div>
+    <div class="coluna">
+      <h3>Starvation: a senha resolve</h3>
+      <div class="caixa">
+        <p>O faminto com a <b>menor senha</b> nunca é barrado por prioridade.</p>
+        <p>Ele só espera o vizinho terminar a refeição atual (1 ms).</p>
+        <p style="margin:0">Quem termina volta com senha maior → todo mundo chega à frente da fila.</p>
+      </div>
+      <p class="miudo" style="margin-top:14px"><b class="alerta">Custo:</b> às vezes alguém com os garfos livres espera o vizinho mais antigo → um pouco menos de paralelismo.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <p class="miudo destaque">Fala: Luiz</p>
+  <h2>Alternativas e bons princípios</h2>
+  <div class="colunas" style="grid-template-columns:1fr 440px">
+    <div class="coluna">
+      <table style="font-size:17px">
+        <tr><th>Alternativa</th><th>Ideia e problema</th></tr>
+        <tr><td><b>Hierarquia de garfos</b></td><td>pega o de menor número primeiro; sem deadlock, mas pode deixar vizinho esperando (testamos)</td></tr>
+        <tr><td><b>Garçom (semáforo N−1)</b></td><td>no máximo N−1 sentados; quebra o ciclo, não garante justiça</td></tr>
+        <tr><td><b>Tanenbaum sem senha</b></td><td>estados + vizinhos; sem deadlock, mas com starvation</td></tr>
+        <tr><td><b>Tenta e solta (trylock)</b></td><td>risco de livelock: todos soltam e tentam de novo</td></tr>
+        <tr><td><b>Chandy–Misra</b></td><td>garfos “sujos/limpos”; justo, mas bem mais complexo</td></tr>
+      </table>
+    </div>
+    <div class="coluna">
+      <h3>Princípios — a nossa segue?</h3>
+      <div class="caixa" style="font-size:19px;line-height:1.7">
+        <b>Exclusão mútua</b> · <span class="ok">sim</span>: garfo com 1 dono, 0 violações<br>
+        <b>Progresso</b> · <span class="ok">sim</span>: sem deadlock<br>
+        <b>Espera limitada</b> · <span class="ok">sim</span>: senha por ordem de fome<br>
+        <b>Espera bloqueante</b> · <span class="ok">sim</span>: cond_wait, sem laço de consulta<br>
+        <b>Seção crítica curta</b> · <span class="ok">sim</span>: comer e pensar fora do mutex
+      </div>
+    </div>
+  </div>
+  <p class="miudo rodape">Pergunta do professor 5</p>
+</section>
+
+<section class="slide">
+  <p class="miudo destaque">Fala: Luiz</p>
+  <h2>Demonstração ao vivo</h2>
+<pre><code><span class="miudo"># 1) compilar</span>
+<span class="alerta">$</span> gcc -std=c11 -O2 -Wall -Wextra -pthread *.c -o simulacao -lm
+
+<span class="miudo"># 2) disputa real: 5 filósofos, pensamento zero</span>
+<span class="alerta">$</span> ./simulacao --filosofos 5 --pensar 0
+<span class="ok">Refeicoes: 1200/1200 ... Violacoes=0 Status=OK</span>
+
+<span class="miudo"># 3) a versão ingênua trava (e o timeout encerra)</span>
+<span class="alerta">$</span> ./simulacao --filosofos 5 --pensar 0 --estrategia ingenua --timeout 3
+<span class="erro">TIMEOUT apos 3.0 s: 0 de 5 filosofos terminaram.</span></code></pre>
+  <p style="margin-top:10px"><b>O que olhar:</b> <span class="ok">1.200/1.200 refeições</span>, <span class="ok">0 violações</span>, <span class="ok">status OK</span> — e no ingênuo, cada garfo preso com um filósofo.</p>
+</section>
+
+<!-- ======================================================= VINICIUS ===== -->
+
+<section class="slide">
+  <p class="miudo destaque">Fala: Vinicius</p>
+  <h2>Como medimos</h2>
+  <div class="colunas">
+    <div class="coluna">
+      <table>
+        <tr><th>Fator</th><th>Valores</th><th>Fixo</th></tr>
+        <tr><td><b>A</b> · filósofos</td><td>5 · 10 · 20</td><td>pensar 1 ms</td></tr>
+        <tr><td><b>B</b> · pensar</td><td>0 · 1 · 5 ms</td><td>10 filósofos</td></tr>
+      </table>
+      <p class="miudo" style="margin-top:14px">Referência: <b>10 filósofos, 1 ms</b> · 5 configurações × 5 repetições = 25 execuções (+ as mesmas 25 com a hierarquia, para comparar).</p>
+      <p class="miudo">1.200 refeições de 1 ms · relógio monotônico · 2 CPUs · limite de 30 s</p>
+      <p class="ok forte">50/50 execuções OK · 0 violações · 0 timeouts</p>
+    </div>
+    <div class="coluna">
+      <div class="caixa"><h3>Vazão</h3><p style="margin:0">refeições concluídas ÷ tempo total</p></div>
+      <div class="caixa"><h3>Espera W</h3><p style="margin:0">de “fiquei com fome” até “tenho os dois garfos”</p></div>
+      <div class="caixa"><h3>p95</h3><p style="margin:0">95% das esperas foram menores ou iguais a ele — mostra a cauda que a média esconde</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <p class="miudo destaque">Fala: Vinicius</p>
+  <h2>G1 · Mais filósofos, mais refeições</h2>
+  <div class="colunas estreita-dir">
+    <div class="coluna"><img class="grafico" src="graficos/g1-vazao.png" alt="Vazão por quantidade de filósofos: 1.473, 3.173 e 6.837 refeições por segundo para 5, 10 e 20 filósofos"></div>
+    <div class="coluna">
+      <div class="numerao">×2,15</div>
+      <p>a cada vez que N dobra: 1.473 → 3.173 → 6.837 refeições/s</p>
+      <p><b>Por quê:</b> mais garfos = mais gente comendo junto (até N/2: 2, 5 e 10).</p>
+      <p><b>Confirma a hipótese.</b> As barras de N diferentes não se sobrepõem.</p>
+    </div>
+  </div>
+  <p class="miudo rodape">Pensar 1 ms fixo · 5 execuções por ponto · barra = mín–máx</p>
+</section>
+
+<section class="slide">
+  <p class="miudo destaque">Fala: Vinicius</p>
+  <h2>G2 · Pensar mais, esperar menos</h2>
+  <div class="colunas estreita-dir">
+    <div class="coluna"><img class="grafico" src="graficos/g2-espera.png" alt="p95 da espera por tempo de pensar: 3,18, 2,50 e 0,34 ms para 0, 1 e 5 ms"></div>
+    <div class="coluna">
+      <div class="numerao" style="font-size:44px">p95: 3,18 → 2,50 → 0,34 ms</div>
+      <p><b>Menos disputa:</b> quem pensa mais chega menos vezes ao mesmo tempo.</p>
+      <p><b>Mas a vazão cai:</b> 3.350 → 3.173 → 1.543/s. Esperar menos não é comer mais.</p>
+      <p class="miudo">De 0 para 1 ms as barras se sobrepõem: diferença fraca.</p>
+    </div>
+  </div>
+  <p class="miudo rodape">10 filósofos fixo · p95 de cada execução, média das 5 · barra = mín–máx</p>
+</section>
+
+<section class="slide">
+  <p class="miudo destaque">Fala: Vinicius</p>
+  <h2>G3 · Ninguém é prejudicado</h2>
+  <div class="colunas estreita-dir">
+    <div class="coluna"><img class="grafico" src="graficos/g3-justica.png" alt="p95 da espera de cada um dos 10 filósofos, nossa solução e hierarquia"></div>
+    <div class="coluna">
+      <p><b>Nossa solução:</b> p95 entre <b>2,42 e 2,66 ms</b> para os 10 filósofos — praticamente igual.</p>
+      <p>A variação entre execuções (barras) é maior que a diferença entre filósofos.</p>
+      <p class="miudo"><b>Hierarquia:</b> espera menor nesta carga, com F0 no topo (F0 e F9 começam pelo garfo 0).</p>
+    </div>
+  </div>
+  <p class="miudo rodape">Referência · 600 esperas por filósofo · barra = mín–máx dos 5 p95</p>
+</section>
+
+<section class="slide">
+  <p class="miudo destaque">Fala: Vinicius</p>
+  <h2>G4 · Vizinhos nunca comem juntos</h2>
+  <div class="colunas estreita-dir">
+    <div class="coluna"><img class="grafico" src="graficos/g4-linha-do-tempo.png" alt="Linha do tempo de 100 a 130 ms: quem come e quem espera, e quantos comem juntos"></div>
+    <div class="coluna">
+      <p><b class="destaque">Azul</b> = comendo · <b>cinza</b> = com fome esperando.</p>
+      <p>Nenhuma faixa azul de F<i>i</i> encosta na de F<i>i</i>+1 (nem F9 com F0).</p>
+      <p>Quase sempre <b>4</b> comem juntos; o limite é 5. É o custo da senha.</p>
+      <p class="miudo">Conferido nos eventos das 50 execuções: <b class="ok">0 sobreposições</b>.</p>
+    </div>
+  </div>
+  <p class="miudo rodape">Execução justa_REF_A10_B1_r1 · trecho de 100 a 130 ms</p>
+</section>
+
+<section class="slide">
+  <p class="miudo destaque">Fala: Vinicius</p>
+  <h2>Extra · A média esconde a pior espera</h2>
+  <div class="colunas estreita-dir">
+    <div class="coluna"><img class="grafico" src="graficos/extra-pior-espera.png" alt="Média, p95 e máximo da espera em escala log, nossa solução e hierarquia"></div>
+    <div class="coluna">
+      <h3>Disputa máxima (pensar 0):</h3>
+      <p><b class="alerta">Hierarquia:</b> p95 ≈ 0, mas pior espera de <b>1,1 s</b> — quem solta o garfo pega de novo na hora.</p>
+      <p><b class="destaque">Nossa:</b> pior espera de <b>11 ms</b> e vazão <b>3,4× maior</b>.</p>
+      <p class="miudo">Carga finita: não prova starvation, mostra desigualdade.</p>
+    </div>
+  </div>
+  <p class="miudo rodape">10 filósofos, pensar 0 · média de 5 execuções · escala log</p>
+</section>
+
+<section class="slide">
+  <p class="miudo destaque">Fala: Vinicius</p>
+  <h2>Conclusões</h2>
+  <div class="colunas" style="flex:none;row-gap:16px">
+    <div class="caixa borda-azul" style="margin:0"><h3>Correta</h3><p style="margin:0">50/50 execuções OK, 0 violações, todas as cotas, encerramento limpo. Deadlock impossível por construção.</p></div>
+    <div class="caixa borda-azul" style="margin:0"><h3>Escala</h3><p style="margin:0">Mais filósofos = mais vazão (×4,6 de 5 para 20). Pensar mais reduz a espera e também a vazão.</p></div>
+    <div class="caixa borda-laranja" style="margin:0"><h3>Justiça custa</h3><p style="margin:0">A senha limita a espera de todos, ao preço de um pouco de paralelismo (≈4 de 5 comendo).</p></div>
+    <div class="caixa borda-laranja" style="margin:0"><h3>Limitações</h3><p style="margin:0">2 CPUs e pausas de 1 ms aumentam a variação; com 5 filósofos e pensar 0 a senha pode formar comboio.</p></div>
+  </div>
+  <h2 class="rodape" style="margin-bottom:0">Obrigado! <span class="destaque">Perguntas?</span></h2>
+  <p class="miudo" style="margin:0">Luiz Henrique · Vinicius · Raphael</p>
+</section>
+
+</div>
+
+<script>
+  // Desenha a mesa do slide 2: F0 no topo, sentido horário; o garfo Gi fica
+  // entre F(i-1) e Fi, como no slide original.
+  (function () {
+    var svg = document.getElementById('mesa'), n = 5, h = '';
+    var pt = function (ang, r) { var a = (ang - 90) * Math.PI / 180; return [r * Math.cos(a), r * Math.sin(a)]; };
+    h += '<circle class="tampo" r="105"/>';
+    for (var i = 0; i < n; i++) {
+      var g = i * 360 / n - 180 / n, a = pt(g, 75), b = pt(g, 135), t = pt(g, 160), f = pt(i * 360 / n, 168);
+      h += '<line class="garfo" x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b[0] + '" y2="' + b[1] + '"/>';
+      h += '<text class="garfo-txt" x="' + t[0] + '" y="' + t[1] + '">G' + i + '</text>';
+      h += '<circle class="filo" cx="' + f[0] + '" cy="' + f[1] + '" r="36"/>';
+      h += '<text class="filo-txt" x="' + f[0] + '" y="' + f[1] + '">F' + i + '</text>';
+    }
+    svg.innerHTML = h;
+  })();
+</script>
+<script src="../../assets/deck.js"></script>
+</body>
+</html>
